@@ -5,6 +5,7 @@ and their daily inventory, payable, COGS and inbounds based on an excel template
 
 import os
 import argparse
+import calendar
 import subprocess
 import sys
 import datetime as dt
@@ -24,16 +25,16 @@ SPARK = SparkSession \
 SPARK.sql('use shopee')
 
 
-def get_sop_eop(current_month):
+def get_sop(current_month):
     '''
-    This function returns the SOP (Start of Period) and EOP (End of Period) for the
-    previous month which is denoted as the first day of the last month (SOP) and the
-    last day of the last month (EOP) respectively.
-    :return SOP, EOP: start of period, end of period
+    This function returns the SOP (Start of Period) for the
+    previous month which is denoted as the first day of the last month (SOP)
+    :return SOP: start of period
     '''
     two_months_back = current_month - dateutil.relativedelta.relativedelta(months=2)
-    m6_sop = two_months_back.replace(day=1)
-    return m6_sop
+    m2_sop = two_months_back.replace(day=1)
+    return m2_sop
+
 
 def get_days_in_months(today_date):
     '''
@@ -41,12 +42,15 @@ def get_days_in_months(today_date):
     The last number will always be 30 if today is not the end of the month
     :return: days_in_month (a list of number of days in each month)
     '''
-    start_date = get_sop_eop(today_date)
+    start_date = get_sop(today_date)
     days_in_months = [0,
                       pd.Period(start_date.strftime("%Y-%m-%d")).days_in_month,
                       pd.Period((start_date + pd.offsets.MonthBegin(1)).
-                                strftime("%Y-%m-%d")).days_in_month,
-                      30]
+                                strftime("%Y-%m-%d")).days_in_month]
+    if today_date.day != calendar.monthrange(today_date.year, today_date.month)[1]:
+        days_in_months.append(30)
+    else:
+        days_in_months.append(today_date.day)
     return days_in_months
 
 
@@ -56,13 +60,13 @@ def append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, 
     and automatically computes the averages and sums of one month
     :param write_dict: a dictionary of pivot tables
     :param supplier_info_cols: the columns of supplier category and names
-    :param start_date: start of period
+    :param today_date: today date
     :param days_in_months: number of days in each month
     :param wb_obj: excel template to be written
     :return:
     '''
     start_row = 3
-    start_date = get_sop_eop(today_date)
+    start_date = get_sop(today_date)
     for sheet_name, pivot_df in write_dict.items():
         work_sheet = wb_obj[sheet_name]
         work_sheet['F2'] = start_date
@@ -79,24 +83,13 @@ def append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, 
             for column in range(3, 6):
                 column_letter = get_column_letter(column)
                 month_index = column - 2
-                if month_index < len(days_in_months) - 1:
-                    start_col = 2 + sum(days_in_months[:month_index])
-                    end_col = 2 + sum(days_in_months[:month_index + 1])
-                    cell_index = column_letter + str(row_index)
-                    if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
-                        work_sheet[cell_index] = row[start_col:end_col].mean()
-                    else:
-                        work_sheet[cell_index] = row[start_col:end_col].sum()
-                elif month_index == len(days_in_months) - 1:
-                    end_col = 2 + sum(days_in_months[:month_index + 1])
-                    start_col = end_col - 30
-                    cell_index = column_letter + str(row_index)
-                    if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
-                        work_sheet[cell_index] = row[start_col:end_col].mean()
-                    else:
-                        work_sheet[cell_index] = row[start_col:end_col].sum()
+                start_col = 2 + sum(days_in_months[:month_index])
+                end_col = 2 + sum(days_in_months[:month_index + 1])
+                cell_index = column_letter + str(row_index)
+                if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
+                    work_sheet[cell_index] = row[start_col:end_col].mean()
                 else:
-                    work_sheet[cell_index] = float('nan')
+                    work_sheet[cell_index] = row[start_col:end_col].sum()
             for column in range(pivot_df.shape[1] + 4, work_sheet.max_column):
                 column_letter = get_column_letter(column)
                 cell_index = column_letter + str(row_index)
@@ -107,7 +100,7 @@ def get_main_df(country, today_date):
     '''
     Get the data for the last three months for specific country
     '''
-    m6_sop = get_sop_eop(today_date).strftime("%Y-%m-%d")
+    m2_sop = get_sop(today_date).strftime("%Y-%m-%d")
     today_date = today_date.strftime("%Y-%m-%d")
     query = '''
     SELECT category_cluster, supplier_name, sku_id, sourcing_status, 
@@ -122,7 +115,7 @@ def get_main_df(country, today_date):
         purchase_type = 'Outright'
     and 
         grass_region = '{cntry}'
-    '''.format(start_date=m6_sop, end_date=today_date, cntry=country)
+    '''.format(start_date=m2_sop, end_date=today_date, cntry=country)
     print(query)
     return SPARK.sql(query)
 
@@ -158,6 +151,13 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
 
 
 def main(today_date, countries, data_queried):
+    '''
+    Pull data; write to the template and save tracking table and
+    pivot tables for inventory, COGS, inbounds and COGS
+    :param today_date: last day of the report
+    :param countries: one or more countries to generate report for
+    :param data_queried: whether the data has been pulled and saved to local already
+    '''
     for country in countries:
         print('starting country', country)
         country_folder_path = './' + country + '/'
@@ -171,22 +171,25 @@ def main(today_date, countries, data_queried):
             os.makedirs(input_file_path)
 
         if not data_queried:
-            df = get_main_df(country, today_date)
-            write_to_csv(df, 'main_df', input_file_path + '/main_df.csv')
-            df = df.toPandas()
+            main_df = get_main_df(country, today_date)
+            write_to_csv(main_df, 'main_df', input_file_path + '/main_df.csv')
+            main_df = main_df.toPandas()
         else:
-            df = pd.read_csv(input_file_path + '/main_df.csv', encoding='utf-8-sig', index_col=False)
+            main_df = pd.read_csv(input_file_path + '/main_df.csv',
+                                  encoding='utf-8-sig', index_col=False)
 
-        df['grass_date'] = pd.to_datetime(df['grass_date'])
-        df_info = df[df['grass_date'] == today_date]
+        main_df['grass_date'] = pd.to_datetime(main_df['grass_date'])
+        df_info = main_df[main_df['grass_date'] == today_date]
 
         df_inv_count = df_info.groupby('supplier_name')['stock_on_hand'].sum().reset_index()
         df_inv_count.columns = ['supplier_name', 'inv_count']
 
         df_inv_sorting = df_info.groupby(['category_cluster', 'supplier_name'])[
             'inventory_value_usd'].sum().reset_index()
-        df_inv_sorting0 = df_inv_sorting.sort_values(['supplier_name', 'inventory_value_usd'], ascending=False)
-        df_inv_sorting1 = df_inv_sorting0.groupby('supplier_name')['supplier_name', 'category_cluster'].head(1)
+        df_inv_sorting0 = df_inv_sorting.sort_values(['supplier_name', 'inventory_value_usd'],
+                                                     ascending=False)
+        df_inv_sorting1 = df_inv_sorting0.groupby('supplier_name')['supplier_name',
+                                                                   'category_cluster'].head(1)
         df_inv_sorting1 = df_inv_sorting1[['category_cluster', 'supplier_name']]
         df_inv_count = df_inv_sorting1.merge(df_inv_count, on=['supplier_name'], how='left')
         df_inv_sum = df_info.groupby('supplier_name')['inventory_value_usd',].sum().reset_index()
@@ -195,8 +198,10 @@ def main(today_date, countries, data_queried):
         df_sku_count.columns = ['supplier_name', 'no_skus_WH']
         df_info0 = df_sku_count.merge(df_inv_count, on=['supplier_name'], how='left')
 
-        df_payment = df_info.groupby('supplier_name')['supplier_name', 'payment_terms'].head(1).reset_index(drop=True)
-        df_last_month = df[(df['grass_date'] >= today_date - dt.timedelta(days=30)) & (df['grass_date'] <= today_date)]
+        df_payment = df_info.groupby('supplier_name')['supplier_name', 'payment_terms'].\
+            head(1).reset_index(drop=True)
+        df_last_month = main_df[(main_df['grass_date'] >= today_date - dt.timedelta(days=30))
+                                & (main_df['grass_date'] <= today_date)]
         df_last_month.drop_duplicates(inplace=True)
         brands_df = df_last_month[['supplier_name', 'brand']]
         brands_df = brands_df[brands_df.brand != 'nan']
@@ -212,7 +217,8 @@ def main(today_date, countries, data_queried):
         top_brands_cols = ['supplier_name', 'brand_1', 'brand_2', 'brand_3']
         top_brands_df = pd.DataFrame(columns=top_brands_cols)
         for supplier in supplier_names:
-            slice_df = brand_count_top_3_df[(brand_count_top_3_df.supplier_name == supplier)].reset_index()
+            slice_df = brand_count_top_3_df[(brand_count_top_3_df.supplier_name == supplier)].\
+                reset_index()
             three_brands = dict()
             for i in range(number_of_top_brands):
                 key = 'brand_{}'.format(i + 1)
@@ -231,27 +237,27 @@ def main(today_date, countries, data_queried):
         df_info1 = df_info0.merge(df_inv_sum, on=['supplier_name'], how='left')
         df_info2 = df_info1.merge(top_brands_df, on=['supplier_name'], how='left')
         df_info3 = df_info2.merge(df_payment, on=['supplier_name'], how='left')
-        df_total_sum = df.groupby(['supplier_name', 'grass_date']).sum().reset_index()
+        df_total_sum = main_df.groupby(['supplier_name', 'grass_date']).sum().reset_index()
         df_total_sum['grass_date'] = df_total_sum['grass_date'].dt.strftime('%Y-%m-%d')
         df_cogs = pd.pivot_table(df_total_sum, values='cogs_usd', index='supplier_name',
                                  columns='grass_date').reset_index()
         df_cogs = df_inv_sorting1.merge(df_cogs, on=['supplier_name'], how='right')
 
-        df_payables = pd.pivot_table(df_total_sum, values='acct_payables_usd', index='supplier_name',
-                                     columns='grass_date').reset_index()
+        df_payables = pd.pivot_table(df_total_sum, values='acct_payables_usd',
+                                     index='supplier_name', columns='grass_date').reset_index()
         df_payables = df_inv_sorting1.merge(df_payables, on=['supplier_name'], how='right')
 
-        df_inv_value = pd.pivot_table(df_total_sum, values='inventory_value_usd', index='supplier_name',
-                                      columns='grass_date').reset_index()
+        df_inv_value = pd.pivot_table(df_total_sum, values='inventory_value_usd',
+                                      index='supplier_name', columns='grass_date').reset_index()
         df_inv_value = df_inv_sorting1.merge(df_inv_value, on=['supplier_name'], how='right')
 
-        df_inbound = pd.pivot_table(df_total_sum, values='inbound_value_usd', index='supplier_name',
-                                    columns='grass_date').reset_index()
+        df_inbound = pd.pivot_table(df_total_sum, values='inbound_value_usd',
+                                    index='supplier_name', columns='grass_date').reset_index()
         df_inbound = df_inv_sorting1.merge(df_inbound, on=['supplier_name'], how='right')
 
-        df_info3 = df_info3[['category_cluster', 'supplier_name', 'no_skus_WH', 'inv_count',
-                            'inventory_value_usd', 'brand_1', 'brand_2', 'brand_3',
-                            'payment_terms']]
+        df_info3 = df_info3[['category_cluster', 'supplier_name', 'no_skus_WH',
+                             'inv_count', 'inventory_value_usd', 'brand_1',
+                             'brand_2', 'brand_3', 'payment_terms']]
 
         path = country_folder_path + 'Weekly_wc_template.xlsx'
         wb_obj = openpyxl.load_workbook(path)
@@ -264,7 +270,8 @@ def main(today_date, countries, data_queried):
                 continue
             supplier_highlight.append(cell_obj.value)
 
-        df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)].reset_index(drop=True)
+        df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)]\
+            .reset_index(drop=True)
         main_ws = wb_obj['Tracking']
         main_ws['B1'] = dt.date.today()
         for df_index, row in df_info4.iterrows():
@@ -286,11 +293,16 @@ def main(today_date, countries, data_queried):
         append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, wb_obj)
         wb_obj.save(country_folder_path + '/month_{}_sample.xlsx'.format(country))
 
-        df_info3.to_csv(country_folder_path + '{}_tracking_tab_v2.csv'.format(country), encoding="utf-8-sig")
-        df_payables.to_csv(country_folder_path + '{}_payables_v2.csv'.format(country), encoding="utf-8-sig")
-        df_cogs.to_csv(country_folder_path + '{}_cogs_v2.csv'.format(country), encoding="utf-8-sig")
-        df_inv_value.to_csv(country_folder_path + '{}_inventory_value_v2.csv'.format(country), encoding="utf-8-sig")
-        df_inbound.to_csv(country_folder_path + '{}_inbound_v2.csv'.format(country), encoding="utf-8-sig")
+        df_info3.to_csv(country_folder_path + '{}_tracking_tab_v2.csv'.format(country),
+                        encoding="utf-8-sig")
+        df_payables.to_csv(country_folder_path + '{}_payables_v2.csv'.format(country),
+                           encoding="utf-8-sig")
+        df_cogs.to_csv(country_folder_path + '{}_cogs_v2.csv'.format(country),
+                       encoding="utf-8-sig")
+        df_inv_value.to_csv(country_folder_path + '{}_inventory_value_v2.csv'.format(country),
+                            encoding="utf-8-sig")
+        df_inbound.to_csv(country_folder_path + '{}_inbound_v2.csv'.format(country),
+                          encoding="utf-8-sig")
 
 
 if __name__ == '__main__':
