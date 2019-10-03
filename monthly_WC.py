@@ -104,11 +104,11 @@ def append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, 
 
 
 def get_main_df(country, today_date):
-    m6_sop = get_sop_eop(today_date).strftime("%Y-%m-%d")
-    today_date = today_date.strftime("%Y-%m-%d")
     '''
     Get the data for the last three months for specific country
     '''
+    m6_sop = get_sop_eop(today_date).strftime("%Y-%m-%d")
+    today_date = today_date.strftime("%Y-%m-%d")
     query = '''
     SELECT category_cluster, supplier_name, sku_id, sourcing_status, 
             cogs_usd, stock_on_hand, inbound_value_usd, acct_payables_usd, 
@@ -196,9 +196,9 @@ def main(today_date, countries, data_queried):
         df_info0 = df_sku_count.merge(df_inv_count, on=['supplier_name'], how='left')
 
         df_payment = df_info.groupby('supplier_name')['supplier_name', 'payment_terms'].head(1).reset_index(drop=True)
-        df_sep = df[(df['grass_date'] >= today_date - dt.timedelta(days=30)) & (df['grass_date'] <= today_date)]
-        df_sep.drop_duplicates(inplace=True)
-        brands_df = df_sep[['supplier_name', 'brand']]
+        df_last_month = df[(df['grass_date'] >= today_date - dt.timedelta(days=30)) & (df['grass_date'] <= today_date)]
+        df_last_month.drop_duplicates(inplace=True)
+        brands_df = df_last_month[['supplier_name', 'brand']]
         brands_df = brands_df[brands_df.brand != 'nan']
         number_of_top_brands = 3
         supplier_names = set(brands_df['supplier_name'].to_list())
@@ -264,11 +264,11 @@ def main(today_date, countries, data_queried):
                 continue
             supplier_highlight.append(cell_obj.value)
 
-        df_info3 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)]
+        df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)].reset_index(drop=True)
         main_ws = wb_obj['Tracking']
         main_ws['B1'] = dt.date.today()
-        for df_index, row in df_info3.iterrows():
-            for col_index in range(df_info3.shape[1]):
+        for df_index, row in df_info4.iterrows():
+            for col_index in range(df_info4.shape[1]):
                 cell_index = get_column_letter(col_index + 1) + str(df_index + 4)
                 main_ws[cell_index] = row[col_index]
 
