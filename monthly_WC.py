@@ -83,13 +83,22 @@ def append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, 
             for column in range(3, 6):
                 column_letter = get_column_letter(column)
                 month_index = column - 2
-                start_col = 2 + sum(days_in_months[:month_index])
-                end_col = 2 + sum(days_in_months[:month_index + 1])
-                cell_index = column_letter + str(row_index)
-                if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
-                    work_sheet[cell_index] = row[start_col:end_col].mean()
+                if month_index < len(days_in_months) - 1:
+                    start_col = 2 + sum(days_in_months[:month_index])
+                    end_col = 2 + sum(days_in_months[:month_index + 1])
+                    cell_index = column_letter + str(row_index)
+                    if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
+                        work_sheet[cell_index] = row[start_col:end_col].mean()
+                    else:
+                        work_sheet[cell_index] = row[start_col:end_col].sum()
                 else:
-                    work_sheet[cell_index] = row[start_col:end_col].sum()
+                    end_col = 2 + sum(days_in_months)
+                    start_col = end_col - days_in_months[month_index]
+                    cell_index = column_letter + str(row_index)
+                    if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
+                        work_sheet[cell_index] = row[start_col:end_col].mean()
+                    else:
+                        work_sheet[cell_index] = row[start_col:end_col].sum()
             for column in range(pivot_df.shape[1] + 4, work_sheet.max_column):
                 column_letter = get_column_letter(column)
                 cell_index = column_letter + str(row_index)
@@ -273,7 +282,7 @@ def main(today_date, countries, data_queried):
         df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)]\
             .reset_index(drop=True)
         main_ws = wb_obj['Tracking']
-        main_ws['B1'] = dt.date.today()
+        main_ws['B1'] = today_date
         for df_index, row in df_info4.iterrows():
             for col_index in range(df_info4.shape[1]):
                 cell_index = get_column_letter(col_index + 1) + str(df_index + 4)
