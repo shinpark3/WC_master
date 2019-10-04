@@ -83,18 +83,17 @@ def append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, 
             for column in range(3, 6):
                 column_letter = get_column_letter(column)
                 month_index = column - 2
+                cell_index = column_letter + str(row_index)
                 if month_index < len(days_in_months) - 1:
                     start_col = 2 + sum(days_in_months[:month_index])
                     end_col = 2 + sum(days_in_months[:month_index + 1])
-                    cell_index = column_letter + str(row_index)
                     if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
                         work_sheet[cell_index] = row[start_col:end_col].mean()
                     else:
                         work_sheet[cell_index] = row[start_col:end_col].sum()
                 else:
-                    end_col = 2 + sum(days_in_months)
+                    end_col = len(row)
                     start_col = end_col - days_in_months[month_index]
-                    cell_index = column_letter + str(row_index)
                     if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
                         work_sheet[cell_index] = row[start_col:end_col].mean()
                     else:
@@ -159,13 +158,14 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
     os.remove(local_filename + "_tmp")
 
 
-def main(today_date, countries, data_queried):
+def main(today_date, countries, data_queried, read_supplier):
     '''
     Pull data; write to the template and save tracking table and
     pivot tables for inventory, COGS, inbounds and COGS
     :param today_date: last day of the report
     :param countries: one or more countries to generate report for
     :param data_queried: whether the data has been pulled and saved to local already
+    :param read_supplier: track only suppliers listed in template
     '''
     for country in countries:
         print('starting country', country)
@@ -270,17 +270,21 @@ def main(today_date, countries, data_queried):
 
         path = country_folder_path + 'Weekly_wc_template.xlsx'
         wb_obj = openpyxl.load_workbook(path)
-        work_sheet = wb_obj[country]
-        m_row = work_sheet.max_row
-        supplier_highlight = []
-        for i in range(4, m_row + 1):
-            cell_obj = work_sheet.cell(row=i, column=1)
-            if cell_obj.value in (None, 'TOTAL'):
-                continue
-            supplier_highlight.append(cell_obj.value)
+        if not read_supplier:
+            df_info4 = df_info3
+        else:
+            work_sheet = wb_obj[country]
+            m_row = work_sheet.max_row
+            supplier_highlight = []
+            for i in range(4, m_row + 1):
+                cell_obj = work_sheet.cell(row=i, column=1)
+                if cell_obj.value in (None, 'TOTAL'):
+                    continue
+                supplier_highlight.append(cell_obj.value)
 
-        df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)]\
-            .reset_index(drop=True)
+            df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)] \
+                .reset_index(drop=True)
+
         main_ws = wb_obj['Tracking']
         main_ws['B1'] = today_date
         for df_index, row in df_info4.iterrows():
@@ -322,5 +326,6 @@ if __name__ == '__main__':
                         type=lambda d: dt.datetime.strptime(d, '%Y%m%d').date(),
                         help="Date in the format yyyymmdd")
     parser.add_argument('-q', '--queried', help='has data been queried?', default=False)
+    parser.add_argument('--notread', help='read supplier highlight from template?', action='store_false')
     args = parser.parse_args()
-    main(args.date, args.countries, args.queried)
+    main(args.date, args.countries, args.queried, args.notread)
