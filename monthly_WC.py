@@ -141,7 +141,7 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
     '''
     print("Output File Name: ", output_file_name)
     req_headers = query_df.columns
-    output_filename = '/user/yutong.zou/{}/tmp.csv'.format(report_directory_name)
+    output_filename = '/user/yongshin.park/{}/tmp.csv'.format(report_directory_name)
     local_filename = output_file_name
     query_df.write.format('csv').mode('overwrite'). \
         options(header='false', escape='"', encoding="UTF-8").save(output_filename)
@@ -268,7 +268,7 @@ def main(today_date, countries, data_queried, read_supplier):
                              'inv_count', 'inventory_value_usd', 'brand_1',
                              'brand_2', 'brand_3', 'payment_terms']]
 
-        path = country_folder_path + 'Weekly_wc_template.xlsx'
+        path = country_folder_path + '{}_Weekly_wc_template.xlsx'.format(country)
         wb_obj = openpyxl.load_workbook(path)
         if not read_supplier:
             df_info4 = df_info3
