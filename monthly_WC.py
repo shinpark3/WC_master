@@ -141,7 +141,7 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
     '''
     print("Output File Name: ", output_file_name)
     req_headers = query_df.columns
-    output_filename = '/user/yutong.zou/{}/tmp.csv'.format(report_directory_name)
+    output_filename = './{}/tmp.csv'.format(report_directory_name)
     local_filename = output_file_name
     query_df.write.format('csv').mode('overwrite'). \
         options(header='false', escape='"', encoding="UTF-8").save(output_filename)
