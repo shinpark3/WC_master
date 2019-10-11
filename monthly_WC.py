@@ -156,7 +156,7 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
     '''
     print("Output File Name: ", output_file_name)
     req_headers = query_df.columns
-    output_filename = './{}/tmp.csv'.format(report_directory_name)
+    output_filename = 'user/yutong.zou/{}/tmp.csv'.format(report_directory_name)
     local_filename = output_file_name
     query_df.write.format('csv').mode('overwrite'). \
         options(header='false', escape='"', encoding="UTF-8").save(output_filename)
@@ -197,7 +197,7 @@ def main(country, today_date, main_df, read_supplier):
                                                                'category_cluster'].head(1)
     df_inv_sorting1 = df_inv_sorting1[['category_cluster', 'supplier_name']]
     df_inv_count = df_inv_sorting1.merge(df_inv_count, on=['supplier_name'], how='left')
-    df_inv_sum = df_info.groupby('supplier_name')['inventory_value_usd',].sum().reset_index()
+    df_inv_sum = df_info.groupby('supplier_name')['inventory_value_usd'].sum().reset_index()
 
     df_sku_count = df_info.groupby('supplier_name')['sku_id'].count().reset_index()
     df_sku_count.columns = ['supplier_name', 'no_skus_WH']
@@ -215,7 +215,7 @@ def main(country, today_date, main_df, read_supplier):
     brand_count_df = brands_df.groupby(['supplier_name', 'brand']).size()
     # get nlargest per subgroup
     brand_count_top_3_df = brand_count_df.groupby(['supplier_name'], group_keys=False).apply(
-        lambda subgroup: subgroup.nlargest(3))
+        lambda subgroup: subgroup.nlargest(number_of_top_brands))
     # drop count column and reset_index
     brand_count_top_3_df = brand_count_top_3_df.reset_index().drop(columns=0)
     # final brands dataframe in desired output
@@ -312,6 +312,9 @@ def main(country, today_date, main_df, read_supplier):
                         encoding="utf-8-sig")
     df_inbound.to_csv(country_folder_path + '{}_inbound_v2.csv'.format(country),
                       encoding="utf-8-sig")
+    result_dict = {'tracking': df_info3, 'payable': df_payable, 'cogs': df_cogs,
+                   'inventory': df_inv_value, 'inbound': df_inbound}
+    return result_dict
 
 
 if __name__ == '__main__':
