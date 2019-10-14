@@ -383,7 +383,7 @@ def main(country, today_date, main_df):
     df_inbound.to_csv(country_folder_path + '{}_inbound_v2.csv'.format(country),
                       encoding="utf-8-sig")
     result_dict = {'tracking': df_info3, 'payable': df_payable, 'cogs': df_cogs,
-                   'inventory': df_inv_value, 'inbound': df_inbound}
+                   'inventory': df_inv_value, 'inbound': df_inbound, 'tracking_yaml': df_info4}
     return result_dict
 
 

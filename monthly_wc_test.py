@@ -1,6 +1,7 @@
 import unittest
 import datetime as dt
 import pandas as pd
+import yaml
 from pandas.util.testing import assert_frame_equal
 from monthly_WC import main as wc_main
 
@@ -66,7 +67,7 @@ main_df = pd.DataFrame(
               ['Cbrand1'] * 92 + ['Cbrand2'] * 92 + ['Cbrand2'] * 92,
      'grass_date': days * 9})
 
-result_df = wc_main('testing', end_date, main_df, False)
+result_df = wc_main('testing', end_date, main_df)
 
 
 class TestPivotTables(unittest.TestCase):
@@ -122,6 +123,20 @@ class TestPivotTables(unittest.TestCase):
         self.assertEqual(result_tracking1.shape[0], expected_tracking.shape[0],
                          "Number of suppliers is different")
         assert_frame_equal(result_tracking1, expected_tracking)
+
+    def test_yaml_reading(self):
+        result_yaml_reading = result_df.get('tracking_yaml')
+        stream = open('./suppliers_testing.yaml', 'r')
+        dictionary = yaml.load(stream, Loader=yaml.FullLoader)
+        supplier_dict = {}
+        for key, value in dictionary.items():
+            my_key = str(key)
+            supplier_dict[my_key] = value
+
+        print(result_yaml_reading['supplier_name'])
+        print(supplier_dict[my_key])
+        self.assertEqual(len(result_yaml_reading['supplier_name']), len(supplier_dict[my_key]),
+                         "Number of suppliers highlighted is different")
 
 
 if __name__ == '__main__':
