@@ -12,6 +12,7 @@ import datetime as dt
 import pandas as pd
 import dateutil.relativedelta
 import openpyxl
+import yaml
 from openpyxl.utils import get_column_letter
 from pyspark.sql import SparkSession
 
@@ -174,14 +175,13 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
     os.remove(local_filename + "_tmp")
 
 
-def main(country, today_date, main_df, read_supplier):
+def main(country, today_date, main_df):
     '''
     Pull data; write to the template and save tracking table and
     pivot tables for inventory, COGS, inbounds and COGS
     :param country: country
     :param today_date: last day of the report
     :param main_df: main data frame
-    :param read_supplier: track only suppliers listed in template
     '''
     country_folder_path = './' + country + '/'
     main_df['grass_date'] = pd.to_datetime(main_df['grass_date'])
@@ -265,23 +265,21 @@ def main(country, today_date, main_df, read_supplier):
                          'inv_count', 'inventory_value_usd', 'brand_1',
                          'brand_2', 'brand_3', 'payment_terms']]
 
-    path = country_folder_path + 'Weekly_wc_template.xlsx'
-    wb_obj = openpyxl.load_workbook(path)
-    if not read_supplier:
+    stream = open('./suppliers.yaml', 'r')
+    dictionary = yaml.load(stream, Loader=yaml.FullLoader)
+    supplier_dict = {}
+    for key, value in dictionary.items():
+        supplier_dict[str(key)] = value
+
+    if supplier_dict.get(country) is None:
         df_info4 = df_info3
     else:
-        work_sheet = wb_obj[country]
-        m_row = work_sheet.max_row
-        supplier_highlight = []
-        for i in range(4, m_row + 1):
-            cell_obj = work_sheet.cell(row=i, column=1)
-            if cell_obj.value in (None, 'TOTAL'):
-                continue
-            supplier_highlight.append(cell_obj.value)
-
+        supplier_highlight = supplier_dict.get(country)
         df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)] \
             .reset_index(drop=True)
 
+    path = country_folder_path + 'Weekly_wc_template.xlsx'
+    wb_obj = openpyxl.load_workbook(path)
     main_ws = wb_obj['Tracking']
     main_ws['B1'] = today_date
     for df_index, row in df_info4.iterrows():
@@ -326,8 +324,7 @@ if __name__ == '__main__':
                         type=lambda d: dt.datetime.strptime(d, '%Y%m%d').date(),
                         help="Date in the format yyyymmdd")
     parser.add_argument('-q', '--queried', help='has data been queried?', default=False)
-    parser.add_argument('--notread', help='read supplier highlight from template?', action='store_false')
     args = parser.parse_args()
     for country0 in args.countries:
         main_df0 = get_main_df(country0, args.date, args.queried)
-        main(country0, args.date, main_df0, args.notread)
+        main(country0, args.date, main_df0)
