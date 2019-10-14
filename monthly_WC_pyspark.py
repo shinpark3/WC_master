@@ -19,8 +19,11 @@ from pyspark.sql.functions import first
 import pyspark.sql.functions as F
 from pyspark.sql.window import Window
 from pyspark.sql.functions import rank, col, udf
-from pyspark.sql.types import StringType
-from pyspark import SQLContext
+from pyspark import SparkContext
+from pyspark.sql import SQLContext
+from pyspark.sql.types import *
+
+sc = SparkContext.getOrCreate()
 
 
 reload(sys)
@@ -142,10 +145,34 @@ def get_main_df(country, today_date, data_queried):
             '''.format(start_date=m2_sop, end_date=today_date, cntry=country)
         print(query)
         main_df = spark.sql(query)
-        write_to_csv(main_df, 'main_df', input_file_path + '/main_df.csv')
+        write_to_csv(main_df, '', input_file_path + '/main_df.csv')
     else:
         #todo
-        main_df = SQLContext.textFile(input_file_path + '/main_df.csv')
+        current_dir = os.getcwd()
+        #username = os.getcwd().split('/')[-1]
+        #path = '/user/' + username + '/' + country + '/input_files/main_df.csv'
+        #print(path)
+        #main_df = spark.read.format('csv').option('header', 'true').load(path)
+        # read into RDD
+        # main_df = sc.textFile('file:///' + current_dir + '/' + country + 'input_files/main_df.csv')
+        # read into dataframe
+        # main_df = spark.read.csv('file:///' + current_dir + '/' + country + '/input_files/main_df.csv',
+        #                          mode="DROPMALFORMED", inferSchema=True, header=True)
+        # read into pandas
+        main_df = pd.read_csv(input_file_path + '/main_df.csv', encoding='utf-8-sig', index_col=False)
+        mySchema = StructType([StructField("category_cluster", StringType(), True),
+                               StructField("supplier_name", StringType(), True),
+                               StructField("sku_id", StringType(), True),
+                               StructField("sourcing_status", StringType(), True),
+                               StructField("cogs_usd", FloatType(), True),
+                               StructField("stock_on_hand", IntegerType(), True),
+                               StructField("inbound_value_usd", FloatType(), True),
+                               StructField("acct_payables_usd", FloatType(), True),
+                               StructField("inventory_value_usd", FloatType(), True),
+                               StructField("payment_terms", StringType(), True),
+                               StructField("brand", StringType(), True),
+                               StructField("grass_date", StringType(), True)])
+        main_df = spark.createDataFrame(main_df, schema=mySchema)
     return main_df
 
 
@@ -190,7 +217,7 @@ def main(country, today_date, main_df, read_supplier):
     :param read_supplier: track only suppliers listed in template
     '''
     country_folder_path = './' + country + '/'
-    main_df.select(to_date(main_df.grass_date).alias('date')).collect()
+    main_df = main_df.withColumn('grass_date', to_date(col('grass_date')))
     df_info = main_df.filter(main_df['grass_date'] == today_date)
 
     df_inv_count = df_info.groupBy('supplier_name')\
