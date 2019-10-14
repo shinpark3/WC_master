@@ -121,9 +121,11 @@ def get_main_df(country, today_date, data_queried):
     country_folder_path = './' + country + '/'
     if not os.path.exists(country_folder_path):
         os.makedirs(country_folder_path)
+
     input_file_path = "{}input_files".format(country_folder_path)
     if not os.path.exists(input_file_path):
         os.makedirs(input_file_path)
+
     if not data_queried:
         m2_sop = get_sop(today_date).strftime("%Y-%m-%d")
         today_date = today_date.strftime("%Y-%m-%d")
@@ -146,7 +148,7 @@ def get_main_df(country, today_date, data_queried):
         write_to_csv(main_df, '', input_file_path + '/main_df.csv')
     else:
         #todo
-        current_dir = os.getcwd()
+        # current_dir = os.getcwd()
         #username = os.getcwd().split('/')[-1]
         #path = '/user/' + username + '/' + country + '/input_files/main_df.csv'
         #print(path)
@@ -158,7 +160,7 @@ def get_main_df(country, today_date, data_queried):
         #                          mode="DROPMALFORMED", inferSchema=True, header=True)
         # read into pandas
         main_df = pd.read_csv(input_file_path + '/main_df.csv', encoding='utf-8-sig', index_col=False)
-        mySchema = StructType([StructField("category_cluster", StringType(), True),
+        my_schema = StructType([StructField("category_cluster", StringType(), True),
                                StructField("supplier_name", StringType(), True),
                                StructField("sku_id", StringType(), True),
                                StructField("sourcing_status", StringType(), True),
@@ -170,7 +172,7 @@ def get_main_df(country, today_date, data_queried):
                                StructField("payment_terms", StringType(), True),
                                StructField("brand", StringType(), True),
                                StructField("grass_date", StringType(), True)])
-        main_df = spark.createDataFrame(main_df, schema=mySchema)
+        main_df = spark.createDataFrame(main_df, schema=my_schema)
     return main_df
 
 
@@ -304,29 +306,29 @@ def main(country, today_date, main_df):
     col_names = ['category_cluster', 'supplier_name'] + dates
     df_cogs = df_total_sum.groupBy('supplier_name')\
         .pivot('grass_date')\
-        .agg(F.first('cogs_usd'))
-    df_cogs = df_inv_sorting.join(df_cogs, on=['supplier_name'], how='right')\
+        .agg(F.first('cogs_usd'))\
+        .join(df_inv_sorting, on=['supplier_name'], how='left')\
         .select(col_names)\
         .toPandas()
 
     df_payable = df_total_sum.groupBy('supplier_name')\
         .pivot('grass_date')\
-        .agg(F.first('acct_payables_usd'))
-    df_payable = df_inv_sorting.join(df_payable, on=['supplier_name'], how='right')\
+        .agg(F.first('acct_payables_usd'))\
+        .join(df_inv_sorting, on=['supplier_name'], how='left')\
         .select(col_names)\
         .toPandas()
 
     df_inv_value = df_total_sum.groupBy('supplier_name')\
         .pivot('grass_date')\
-        .agg(F.first('inventory_value_usd'))
-    df_inv_value = df_inv_sorting.join(df_inv_value, on=['supplier_name'], how='right')\
+        .agg(F.first('inventory_value_usd'))\
+        .join(df_inv_sorting, on=['supplier_name'], how='left')\
         .select(col_names)\
         .toPandas()
 
     df_inbound = df_total_sum.groupBy('supplier_name') \
         .pivot('grass_date') \
-        .agg(F.first('inbound_value_usd'))
-    df_inbound = df_inv_sorting.join(df_inbound, on=['supplier_name'], how='right')\
+        .agg(F.first('inbound_value_usd'))\
+        .join(df_inv_sorting, on=['supplier_name'], how='left')\
         .select(col_names)\
         .toPandas()
 
