@@ -11,20 +11,20 @@ import sys
 import datetime as dt
 import pandas as pd
 import dateutil.relativedelta
+import yaml
 import openpyxl
 from openpyxl.utils import get_column_letter
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_date
-from pyspark.sql.functions import first
 import pyspark.sql.functions as F
 from pyspark.sql.window import Window
-from pyspark.sql.functions import rank, col, udf
+from pyspark.sql.functions import col
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
 from pyspark.sql.types import *
 
 sc = SparkContext.getOrCreate()
-
+sqlContext = SQLContext(sc)
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -121,11 +121,9 @@ def get_main_df(country, today_date, data_queried):
     country_folder_path = './' + country + '/'
     if not os.path.exists(country_folder_path):
         os.makedirs(country_folder_path)
-
     input_file_path = "{}input_files".format(country_folder_path)
     if not os.path.exists(input_file_path):
         os.makedirs(input_file_path)
-
     if not data_queried:
         m2_sop = get_sop(today_date).strftime("%Y-%m-%d")
         today_date = today_date.strftime("%Y-%m-%d")
@@ -207,55 +205,48 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
     os.remove(local_filename + "_tmp")
 
 
-def main(country, today_date, main_df, read_supplier):
+def main(country, today_date, main_df):
     '''
     Pull data; write to the template and save tracking table and
     pivot tables for inventory, COGS, inbounds and COGS
     :param country: country
     :param today_date: last day of the report
     :param main_df: main data frame
-    :param read_supplier: track only suppliers listed in template
     '''
     country_folder_path = './' + country + '/'
     main_df = main_df.withColumn('grass_date', to_date(col('grass_date')))
-    df_info = main_df.filter(main_df['grass_date'] == today_date)
+    df_info = main_df.filter(col('grass_date') == today_date)
+    start_date = get_sop(today_date)
+    dates = [(start_date + dt.timedelta(days=x)).strftime("%Y-%m-%d")
+             for x in range((today_date - start_date).days + 1)]
 
     df_inv_count = df_info.groupBy('supplier_name')\
-        .agg(F.sum('stock_on_hand').alias('inv_count')).toPandas()
+        .agg(F.sum('stock_on_hand').alias('inv_count'))
 
     df_inv_sorting = df_info.groupBy(['category_cluster', 'supplier_name'])\
-        .agg({'inventory_value_usd': 'sum'})\
-        .withColumnRenamed('sum(inventory_value_usd)', 'inventory_value_usd')\
+        .agg(F.sum('inventory_value_usd').alias('inventory_value_usd'))\
         .sort(['inventory_value_usd'], ascending=False)\
         .groupBy('supplier_name')\
-        .agg({'category_cluster': 'first'})\
-        .withColumnRenamed('first(category_cluster)', 'category_cluster')\
-        .select('category_cluster', 'supplier_name')\
-        .toPandas()
+        .agg(F.first('category_cluster').alias('category_cluster'))\
+        .select('category_cluster', 'supplier_name')
 
-    df_inv_count = df_inv_sorting.merge(df_inv_count, on=['supplier_name'], how='left')
+    df_inv_count = df_inv_sorting.join(df_inv_count, on=['supplier_name'], how='left')
 
     df_inv_sum = df_info.groupBy('supplier_name')\
-        .agg({'inventory_value_usd': 'sum'})\
-        .withColumnRenamed('sum(inventory_value_usd)', 'inventory_value_usd')\
-        .toPandas()
+        .agg(F.sum('inventory_value_usd').alias('inventory_value_usd'))
 
     df_sku_count = df_info.groupBy('supplier_name')\
-        .agg(F.countDistinct('sku_id'))\
-        .withColumnRenamed('count(DISTINCT sku_id)', 'no_skus_WH')\
-        .toPandas()
+        .agg(F.countDistinct('sku_id').alias('no_skus_WH'))
 
-    df_info0 = df_sku_count.merge(df_inv_count, on=['supplier_name'], how='left')
+    df_info0 = df_sku_count.join(df_inv_count, on=['supplier_name'], how='left')
 
     df_payment = df_info.groupBy('supplier_name')\
-        .agg({'payment_terms': 'first'})\
-        .withColumnRenamed('first(payment_terms)', 'payment_terms')\
-        .toPandas()
+        .agg(F.first('payment_terms').alias('payment_terms'))
 
-    df_last_month = main_df.filter((main_df['grass_date'] >= today_date - dt.timedelta(days=30))
-                                   & (main_df['grass_date'] <= today_date)).dropDuplicates()
+    df_last_month = main_df.filter((col('grass_date') >= today_date - dt.timedelta(days=30))
+                                   & (col('grass_date') <= today_date)).dropDuplicates()
     brands_df = df_last_month.select('supplier_name', 'brand')\
-        .filter(df_last_month['brand'] != 'nan')
+        .filter(col('brand') != 'nan')
     number_of_top_brands = 3
     supplier_names = set(brands_df.select('supplier_name')
                          .dropDuplicates()
@@ -265,7 +256,7 @@ def main(country, today_date, main_df, read_supplier):
     # get nlargest per subgroup
     window = Window.partitionBy(brand_count_df['supplier_name'])\
         .orderBy(brand_count_df['count'].desc())
-    brand_count_top_3_df = brand_count_df.select('*', rank().over(window).alias('rank'))\
+    brand_count_top_3_df = brand_count_df.select('*', F.rank().over(window).alias('rank'))\
         .filter(col('rank') <= number_of_top_brands)\
         .drop('count', 'rank')
     brand_count_top_3_df = brand_count_top_3_df.toPandas()
@@ -290,14 +281,15 @@ def main(country, today_date, main_df, read_supplier):
 
     top_brands_df = top_brands_df.reset_index(drop=True)
     top_brands_df.fillna('n.a.', inplace=True)
-    # mySchema = StructType([StructField("supplier_name", StringType(), True),
-    #                        StructField("brand_1", StringType(), True),
-    #                        StructField("brand_2", StringType(), True),
-    #                        StructField("brand_3", StringType(), True)])
-    # top_brands_df = sqlContext.createDataFrame(top_brands_df, schema=mySchema)
-    df_info1 = df_info0.merge(df_inv_sum, on=['supplier_name'], how='left')
-    df_info2 = df_info1.merge(top_brands_df, on=['supplier_name'], how='left')
-    df_info3 = df_info2.merge(df_payment, on=['supplier_name'], how='left')
+    my_schema = StructType([StructField("supplier_name", StringType(), True),
+                           StructField("brand_1", StringType(), True),
+                           StructField("brand_2", StringType(), True),
+                           StructField("brand_3", StringType(), True)])
+    top_brands_df = sqlContext.createDataFrame(top_brands_df, schema=my_schema)
+
+    df_info1 = df_info0.join(df_inv_sum, on=['supplier_name'], how='left')
+    df_info2 = df_info1.join(top_brands_df, on=['supplier_name'], how='left')
+    df_info3 = df_info2.join(df_payment, on=['supplier_name'], how='left')
 
     df_total_sum = main_df.groupBy(['supplier_name', 'grass_date'])\
         .agg(F.sum('cogs_usd').alias('cogs_usd'),
@@ -306,53 +298,57 @@ def main(country, today_date, main_df, read_supplier):
              F.sum('inbound_value_usd').alias('inbound_value_usd'))
 
     df_total_sum = df_total_sum.withColumn('grass_date',
-                                           udf(lambda d: d.strftime('%Y-%m-%d'),
-                                               StringType())(col('grass_date')))
+                                           F.udf(lambda d: d.strftime('%Y-%m-%d'),
+                                                 StringType())(col('grass_date')))
 
+    col_names = ['category_cluster', 'supplier_name'] + dates
     df_cogs = df_total_sum.groupBy('supplier_name')\
         .pivot('grass_date')\
-        .agg(first('cogs_usd'))\
+        .agg(F.first('cogs_usd'))
+    df_cogs = df_inv_sorting.join(df_cogs, on=['supplier_name'], how='right')\
+        .select(col_names)\
         .toPandas()
-    df_cogs = df_inv_sorting.merge(df_cogs, on=['supplier_name'], how='right')
 
     df_payable = df_total_sum.groupBy('supplier_name')\
         .pivot('grass_date')\
-        .agg(first('acct_payables_usd'))\
+        .agg(F.first('acct_payables_usd'))
+    df_payable = df_inv_sorting.join(df_payable, on=['supplier_name'], how='right')\
+        .select(col_names)\
         .toPandas()
-    df_payable = df_inv_sorting.merge(df_payable, on=['supplier_name'], how='right')
 
     df_inv_value = df_total_sum.groupBy('supplier_name')\
         .pivot('grass_date')\
-        .agg(first('inventory_value_usd'))\
+        .agg(F.first('inventory_value_usd'))
+    df_inv_value = df_inv_sorting.join(df_inv_value, on=['supplier_name'], how='right')\
+        .select(col_names)\
         .toPandas()
-    df_inv_value = df_inv_sorting.merge(df_inv_value, on=['supplier_name'], how='right')
 
     df_inbound = df_total_sum.groupBy('supplier_name') \
         .pivot('grass_date') \
-        .agg(first('inbound_value_usd'))\
+        .agg(F.first('inbound_value_usd'))
+    df_inbound = df_inv_sorting.join(df_inbound, on=['supplier_name'], how='right')\
+        .select(col_names)\
         .toPandas()
-    df_inbound = df_inv_sorting.merge(df_inbound, on=['supplier_name'], how='right')
 
-    df_info3 = df_info3[['category_cluster', 'supplier_name', 'no_skus_WH',
-                         'inv_count', 'inventory_value_usd', 'brand_1',
-                         'brand_2', 'brand_3', 'payment_terms']]
+    df_info3 = df_info3.select('category_cluster', 'supplier_name', 'no_skus_WH',
+                               'inv_count', 'inventory_value_usd', 'brand_1',
+                               'brand_2', 'brand_3', 'payment_terms').toPandas()
 
-    path = country_folder_path + 'Weekly_wc_template.xlsx'
-    wb_obj = openpyxl.load_workbook(path)
-    if not read_supplier:
+    stream = open('./suppliers.yaml', 'r')
+    dictionary = yaml.load(stream, Loader=yaml.FullLoader)
+    supplier_dict = {}
+    for key, value in dictionary.items():
+        supplier_dict[str(key)] = value
+
+    if supplier_dict.get(country) is None:
         df_info4 = df_info3
     else:
-        work_sheet = wb_obj[country]
-        m_row = work_sheet.max_row
-        supplier_highlight = []
-        for i in range(4, m_row + 1):
-            cell_obj = work_sheet.cell(row=i, column=1)
-            if cell_obj.value in (None, 'TOTAL'):
-                continue
-            supplier_highlight.append(cell_obj.value)
+        supplier_highlight = supplier_dict.get(country)
         df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)]\
             .reset_index(drop=True)
 
+    path = country_folder_path + 'Weekly_wc_template.xlsx'
+    wb_obj = openpyxl.load_workbook(path)
     main_ws = wb_obj['Tracking']
     main_ws['B1'] = today_date
     for df_index, row in df_info4.iterrows():
@@ -397,8 +393,7 @@ if __name__ == '__main__':
                         type=lambda d: dt.datetime.strptime(d, '%Y%m%d').date(),
                         help="Date in the format yyyymmdd")
     parser.add_argument('-q', '--queried', help='has data been queried?', default=False)
-    parser.add_argument('--notread', help='read supplier highlight from template?', action='store_false')
     args = parser.parse_args()
     for country0 in args.countries:
         main_df0 = get_main_df(country0, args.date, args.queried)
-        main(country0, args.date, main_df0, args.notread)
+        main(country0, args.date, main_df0)
