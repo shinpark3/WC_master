@@ -21,7 +21,10 @@ from pyspark.sql.window import Window
 from pyspark.sql.functions import col
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
-from pyspark.sql.types import *
+from pyspark.sql.types import StructType, StructField
+from pyspark.sql.types import StringType, FloatType, IntegerType
+import time
+start_time = time.time()
 
 sc = SparkContext.getOrCreate()
 sqlContext = SQLContext(sc)
@@ -34,6 +37,7 @@ spark = SparkSession \
     .enableHiveSupport() \
     .getOrCreate()
 spark.sql('use shopee')
+# spark.sql('set spark.sql.shuffle.partitions=50')
 
 def get_sop(current_month):
     '''
@@ -114,6 +118,20 @@ def append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, 
                 work_sheet[cell_index] = None
 
 
+def read_suppliers(filename):
+    '''
+    Read supplier list from yaml filename
+    :return: dictionary of country, suppliers pair
+    '''
+    with open(filename, 'r') as stream:
+        dictionary = yaml.load(stream, Loader=yaml.FullLoader)
+    supplier_dict = {}
+    for key, value in dictionary.items():
+        supplier_dict[str(key)] = value
+
+    return supplier_dict
+
+
 def get_main_df(country, today_date, data_queried):
     '''
     Get the data for the last three months for specific country
@@ -145,55 +163,48 @@ def get_main_df(country, today_date, data_queried):
             '''.format(start_date=m2_sop, end_date=today_date, cntry=country)
         print(query)
         main_df = spark.sql(query)
-        write_to_csv(main_df, '', input_file_path + '/main_df.csv')
+        write_to_csv(main_df, input_file_path + '/main_df.csv', country)
     else:
-        #todo
-        # current_dir = os.getcwd()
-        #username = os.getcwd().split('/')[-1]
-        #path = '/user/' + username + '/' + country + '/input_files/main_df.csv'
-        #print(path)
-        #main_df = spark.read.format('csv').option('header', 'true').load(path)
-        # read into RDD
-        # main_df = sc.textFile('file:///' + current_dir + '/' + country + 'input_files/main_df.csv')
-        # read into dataframe
-        # main_df = spark.read.csv('file:///' + current_dir + '/' + country + '/input_files/main_df.csv',
-        #                          mode="DROPMALFORMED", inferSchema=True, header=True)
-        # read into pandas
-        main_df = pd.read_csv(input_file_path + '/main_df.csv', encoding='utf-8-sig', index_col=False)
-        my_schema = StructType([StructField("category_cluster", StringType(), True),
-                               StructField("supplier_name", StringType(), True),
-                               StructField("sku_id", StringType(), True),
-                               StructField("sourcing_status", StringType(), True),
-                               StructField("cogs_usd", FloatType(), True),
-                               StructField("stock_on_hand", IntegerType(), True),
-                               StructField("inbound_value_usd", FloatType(), True),
-                               StructField("acct_payables_usd", FloatType(), True),
-                               StructField("inventory_value_usd", FloatType(), True),
-                               StructField("payment_terms", StringType(), True),
-                               StructField("brand", StringType(), True),
-                               StructField("grass_date", StringType(), True)])
-        main_df = spark.createDataFrame(main_df, schema=my_schema)
+        username = os.getcwd().split('/')[-1]
+        my_schema = StructType([
+            StructField("category_cluster", StringType()),
+            StructField("supplier_name", StringType()),
+            StructField("sku_id", StringType()),
+            StructField("sourcing_status", StringType()),
+            StructField("cogs_usd", FloatType()),
+            StructField("stock_on_hand", IntegerType()),
+            StructField("inbound_value_usd", FloatType()),
+            StructField("acct_payables_usd", FloatType()),
+            StructField("inventory_value_usd", FloatType()),
+            StructField("payment_terms", StringType()),
+            StructField("brand", StringType()),
+            StructField("grass_date", StringType())
+        ])
+        input_file_path0 = 'hdfs://tl0/user/' + username + '/WC/' + country + '/input_files/main_df.csv'
+        main_df = spark.read.csv(input_file_path0, header=True, schema=my_schema)
     return main_df
 
 
-def write_to_csv(query_df, report_directory_name, output_file_name):
+def write_to_csv(query_df, output_file_name, country):
     '''
     This function writes the spark dataframe to a csv file
     :param query_df: spark dataframe
     :type query_df: spark dataframe
     :param output_file_name: Name of Output File
     :type output_file_name: str
-    :param report_directory_name: Name of Report Directory
-    :type report_directory_name: str
+    :param country: country
+    :type country: str
     :return:
     '''
     print("Output File Name: ", output_file_name)
     req_headers = query_df.columns
     username = os.getcwd().split('/')[-1]
-    output_filename = 'user/{u}/{d}/tmp.csv'.format(u=username, d=report_directory_name)
+    output_filename = 'user/{}/tmp.csv'.format(username)
     local_filename = output_file_name
     query_df.write.format('csv').mode('overwrite'). \
         options(header='false', escape='"', encoding="UTF-8").save(output_filename)
+    output_file_path = 'hdfs://tl0/user/' + username + '/WC/' + country + '/input_files/main_df.csv'
+    query_df.write.format('csv').mode('overwrite').save(output_file_path)
     subprocess.call('/usr/share/hadoop/bin/hadoop fs -getmerge %s %s' % (
         output_filename, local_filename + "_tmp"), shell=True)
     subprocess.call('/usr/share/hadoop/bin/hadoop fs -rm -r %s' % output_filename, shell=True)
@@ -207,14 +218,17 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
     os.remove(local_filename + "_tmp")
 
 
-def main(country, today_date, main_df):
+def main(country, today_date, main_df, supplier_dict):
     '''
     Pull data; write to the template and save tracking table and
     pivot tables for inventory, COGS, inbounds and COGS
     :param country: country
     :param today_date: last day of the report
     :param main_df: main data frame
+    :param supplier_dict: a dictionary of country, suppliers pair
     '''
+    half_time = time.time()
+    print("--- %s seconds --- generating data" % (half_time - start_time))
     country_folder_path = './' + country + '/'
     main_df = main_df.withColumn('grass_date', to_date(col('grass_date')))
     df_info = main_df.filter(col('grass_date') == today_date)
@@ -336,12 +350,6 @@ def main(country, today_date, main_df):
                                'inv_count', 'inventory_value_usd', 'brand_1',
                                'brand_2', 'brand_3', 'payment_terms').toPandas()
 
-    stream = open('./suppliers.yaml', 'r')
-    dictionary = yaml.load(stream, Loader=yaml.FullLoader)
-    supplier_dict = {}
-    for key, value in dictionary.items():
-        supplier_dict[str(key)] = value
-
     if supplier_dict.get(country) is None:
         df_info4 = df_info3
     else:
@@ -384,6 +392,8 @@ def main(country, today_date, main_df):
                       encoding="utf-8-sig")
     result_dict = {'tracking': df_info3, 'payable': df_payable, 'cogs': df_cogs,
                    'inventory': df_inv_value, 'inbound': df_inbound, 'tracking_yaml': df_info4}
+    final_time = time.time()
+    print("--- %s seconds ---processing time" % (final_time - half_time))
     return result_dict
 
 
@@ -396,6 +406,7 @@ if __name__ == '__main__':
                         help="Date in the format yyyymmdd")
     parser.add_argument('-q', '--queried', help='has data been queried?', default=False)
     args = parser.parse_args()
+    supplier_dict0 = read_suppliers('./suppliers.yaml')
     for country0 in args.countries:
         main_df0 = get_main_df(country0, args.date, args.queried)
-        main(country0, args.date, main_df0)
+        main(country0, args.date, main_df0, supplier_dict0)
