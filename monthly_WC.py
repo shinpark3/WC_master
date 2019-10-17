@@ -205,14 +205,18 @@ def main(country, today_date, main_df, supplier_dict):
     df_inv_count = df_info.groupby('supplier_name')['stock_on_hand'].sum().reset_index()
     df_inv_count.columns = ['supplier_name', 'inv_count']
 
-    df_inv_sorting = df_info.groupby(['category_cluster', 'supplier_name'])[
+    df_inv_sorting = main_df.sort_values(['grass_date'], ascending=False) \
+        .groupby(['supplier_name'])['supplier_name', 'grass_date'] \
+        .head(1).dropna(subset=['supplier_name'])
+    df_inv_sorting0 = df_inv_sorting.merge(main_df, on=['supplier_name', 'grass_date'])
+    df_inv_sorting1 = df_inv_sorting0.groupby(['category_cluster', 'supplier_name'])[
         'inventory_value_usd'].sum().reset_index()
-    df_inv_sorting0 = df_inv_sorting.sort_values(['supplier_name', 'inventory_value_usd'],
-                                                 ascending=False)
-    df_inv_sorting1 = df_inv_sorting0.groupby('supplier_name')['supplier_name',
-                                                               'category_cluster'].head(1)
-    df_inv_sorting1 = df_inv_sorting1[['category_cluster', 'supplier_name']]
-    df_inv_count = df_inv_sorting1.merge(df_inv_count, on=['supplier_name'], how='left')
+    df_inv_sorting2 = df_inv_sorting1.sort_values(['supplier_name', 'inventory_value_usd'],
+                                                  ascending=False).reset_index() \
+        .groupby('supplier_name')['supplier_name', 'category_cluster'].head(1).reset_index()
+    df_inv_sorting2 = df_inv_sorting2[['category_cluster', 'supplier_name']]
+
+    df_inv_count = df_inv_sorting2.merge(df_inv_count, on=['supplier_name'], how='left')
     df_inv_sum = df_info.groupby('supplier_name')['inventory_value_usd'].sum().reset_index()
 
     df_sku_count = df_info.groupby('supplier_name')['sku_id'].count().reset_index()
@@ -262,19 +266,19 @@ def main(country, today_date, main_df, supplier_dict):
     df_total_sum['grass_date'] = df_total_sum['grass_date'].dt.strftime('%Y-%m-%d')
     df_cogs = pd.pivot_table(df_total_sum, values='cogs_usd', index='supplier_name',
                              columns='grass_date').reset_index()
-    df_cogs = df_inv_sorting1.merge(df_cogs, on=['supplier_name'], how='right')
+    df_cogs = df_inv_sorting2.merge(df_cogs, on=['supplier_name'], how='right')
 
     df_payable = pd.pivot_table(df_total_sum, values='acct_payables_usd',
                                 index='supplier_name', columns='grass_date').reset_index()
-    df_payable = df_inv_sorting1.merge(df_payable, on=['supplier_name'], how='right')
+    df_payable = df_inv_sorting2.merge(df_payable, on=['supplier_name'], how='right')
 
     df_inv_value = pd.pivot_table(df_total_sum, values='inventory_value_usd',
                                   index='supplier_name', columns='grass_date').reset_index()
-    df_inv_value = df_inv_sorting1.merge(df_inv_value, on=['supplier_name'], how='right')
+    df_inv_value = df_inv_sorting2.merge(df_inv_value, on=['supplier_name'], how='right')
 
     df_inbound = pd.pivot_table(df_total_sum, values='inbound_value_usd',
                                 index='supplier_name', columns='grass_date').reset_index()
-    df_inbound = df_inv_sorting1.merge(df_inbound, on=['supplier_name'], how='right')
+    df_inbound = df_inv_sorting2.merge(df_inbound, on=['supplier_name'], how='right')
 
     df_info3 = df_info3[['category_cluster', 'supplier_name', 'no_skus_WH',
                          'inv_count', 'inventory_value_usd', 'brand_1',
@@ -313,7 +317,7 @@ def main(country, today_date, main_df, supplier_dict):
     df_info3.to_csv(country_folder_path + '{}_tracking_tab_v2.csv'.format(country),
                     encoding="utf-8-sig")
     df_payable.to_csv(country_folder_path + '{}_payables_v2.csv'.format(country),
-                       encoding="utf-8-sig")
+                      encoding="utf-8-sig")
     df_cogs.to_csv(country_folder_path + '{}_cogs_v2.csv'.format(country),
                    encoding="utf-8-sig")
     df_inv_value.to_csv(country_folder_path + '{}_inventory_value_v2.csv'.format(country),
