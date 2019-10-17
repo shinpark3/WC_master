@@ -1,9 +1,9 @@
 import unittest
 import datetime as dt
 import pandas as pd
-import yaml
 from pandas.util.testing import assert_frame_equal
 from monthly_WC import main as wc_main
+from monthly_WC import read_suppliers
 
 start_date = dt.date(2019, 7, 1)
 end_date = dt.date(2019, 9, 30)
@@ -43,7 +43,7 @@ main_df = pd.DataFrame(
                           + [0] * 31 + [1000] + [0] * 60  # C001
                           + [0] * 32 + [200] + [0] * 4 + [800] + [0] * 54  # C002
                           + [0] * 65 + [300] + [0] * 16 + [300] + [0] * 9,  # C003
-     'acct_payables_usd': [0]*25 + [50, 50, 100] + [100]*27 + [50]*2 + [0]*35  # A001
+     'acct_payables_usd': [0] * 25 + [50, 50, 100] + [100] * 27 + [50] * 2 + [0] * 35  # A001
                           + [0] * 3 + [400] * 30 + [0] * 3 + [500] * 30 + [0] * 26  # A002
                           + [0] + [150] * 30 + [0] * 30 + [450] * 30 + [0]  # A003
                           + [900] * 2 + [0] * 5 + [300] * 7 + [0] * 78  # B001
@@ -67,7 +67,8 @@ main_df = pd.DataFrame(
               ['Cbrand1'] * 92 + ['Cbrand2'] * 92 + ['Cbrand2'] * 92,
      'grass_date': days * 9})
 
-result_df = wc_main('testing', end_date, main_df)
+supplier_dict = read_suppliers('./suppliers_testing.yaml')
+result_df = wc_main('testing', end_date, main_df, supplier_dict)
 
 
 class TestPivotTables(unittest.TestCase):
@@ -126,16 +127,7 @@ class TestPivotTables(unittest.TestCase):
 
     def test_yaml_reading(self):
         result_yaml_reading = result_df.get('tracking_yaml')
-        stream = open('./suppliers_testing.yaml', 'r')
-        dictionary = yaml.load(stream, Loader=yaml.FullLoader)
-        supplier_dict = {}
-        for key, value in dictionary.items():
-            my_key = str(key)
-            supplier_dict[my_key] = value
-
-        print(result_yaml_reading['supplier_name'])
-        print(supplier_dict[my_key])
-        self.assertEqual(len(result_yaml_reading['supplier_name']), len(supplier_dict[my_key]),
+        self.assertEqual(len(result_yaml_reading['supplier_name']), len(supplier_dict['testing']),
                          "Number of suppliers highlighted is different")
 
 

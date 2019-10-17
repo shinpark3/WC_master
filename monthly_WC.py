@@ -105,6 +105,20 @@ def append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, 
                 work_sheet[cell_index] = None
 
 
+def read_suppliers(filename):
+    '''
+    Read supplier list from yaml filename
+    :return: dictionary of country, suppliers pair
+    '''
+    with open(filename, 'r') as stream:
+        dictionary = yaml.load(stream, Loader=yaml.FullLoader)
+    supplier_dict = {}
+    for key, value in dictionary.items():
+        supplier_dict[str(key)] = value
+
+    return supplier_dict
+
+
 def get_main_df(country, today_date, data_queried):
     '''
     Get the data for the last three months for specific country
@@ -175,13 +189,14 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
     os.remove(local_filename + "_tmp")
 
 
-def main(country, today_date, main_df):
+def main(country, today_date, main_df, supplier_dict):
     '''
     Pull data; write to the template and save tracking table and
     pivot tables for inventory, COGS, inbounds and COGS
     :param country: country
     :param today_date: last day of the report
     :param main_df: main data frame
+    :param supplier_dict: dictionary of country, suppliers list pair
     '''
     country_folder_path = './' + country + '/'
     main_df['grass_date'] = pd.to_datetime(main_df['grass_date'])
@@ -265,12 +280,6 @@ def main(country, today_date, main_df):
                          'inv_count', 'inventory_value_usd', 'brand_1',
                          'brand_2', 'brand_3', 'payment_terms']]
 
-    stream = open('./suppliers.yaml', 'r')
-    dictionary = yaml.load(stream, Loader=yaml.FullLoader)
-    supplier_dict = {}
-    for key, value in dictionary.items():
-        supplier_dict[str(key)] = value
-
     if supplier_dict.get(country) is None:
         df_info4 = df_info3
     else:
@@ -325,6 +334,7 @@ if __name__ == '__main__':
                         help="Date in the format yyyymmdd")
     parser.add_argument('-q', '--queried', help='has data been queried?', default=False)
     args = parser.parse_args()
+    supplier_dict0 = read_suppliers('./suppliers.yaml')
     for country0 in args.countries:
         main_df0 = get_main_df(country0, args.date, args.queried)
-        main(country0, args.date, main_df0)
+        main(country0, args.date, main_df0, supplier_dict0)
