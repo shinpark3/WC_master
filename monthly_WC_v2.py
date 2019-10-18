@@ -9,35 +9,26 @@ import calendar
 import subprocess
 import sys
 import datetime as dt
+import numpy as np
 import pandas as pd
 import dateutil.relativedelta
-import yaml
 import openpyxl
+import yaml
 from openpyxl.utils import get_column_letter
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_date
-import pyspark.sql.functions as F
-from pyspark.sql.window import Window
-from pyspark.sql.functions import col
-from pyspark import SparkContext
-from pyspark.sql import SQLContext
-from pyspark.sql.types import StructType, StructField
-from pyspark.sql.types import StringType, FloatType, IntegerType
 import time
-start_time = time.time()
 
-sc = SparkContext.getOrCreate()
-sqlContext = SQLContext(sc)
+start_time = time.time()
 
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-spark = SparkSession \
+SPARK = SparkSession \
     .builder \
     .enableHiveSupport() \
     .getOrCreate()
-spark.sql('use shopee')
-# spark.sql('set spark.sql.shuffle.partitions=50')
+SPARK.sql('use shopee')
+
 
 def get_sop(current_month):
     '''
@@ -48,6 +39,13 @@ def get_sop(current_month):
     two_months_back = current_month - dateutil.relativedelta.relativedelta(months=2)
     m2_sop = two_months_back.replace(day=1)
     return m2_sop
+
+
+def get_eoms(today_date):
+    m0_eom = today_date
+    m1_eom = today_date.replace(day=1) - dateutil.relativedelta.relativedelta(days=1)
+    m2_eom = m1_eom.replace(day=1) - dateutil.relativedelta.relativedelta(days=1)
+    return [m0_eom, m1_eom, m2_eom]
 
 
 def get_days_in_months(today_date):
@@ -128,7 +126,6 @@ def read_suppliers(filename):
     supplier_dict = {}
     for key, value in dictionary.items():
         supplier_dict[str(key)] = value
-
     return supplier_dict
 
 
@@ -139,16 +136,14 @@ def get_main_df(country, today_date, data_queried):
     country_folder_path = './' + country + '/'
     if not os.path.exists(country_folder_path):
         os.makedirs(country_folder_path)
-
     input_file_path = "{}input_files".format(country_folder_path)
     if not os.path.exists(input_file_path):
         os.makedirs(input_file_path)
-
     if not data_queried:
         m2_sop = get_sop(today_date).strftime("%Y-%m-%d")
         today_date = today_date.strftime("%Y-%m-%d")
         query = '''
-            SELECT category_cluster, supplier_name, sku_id, sourcing_status, 
+            SELECT category_cluster, supplier_name, sku_id, cdate, color,
                     cogs_usd, stock_on_hand, inbound_value_usd, acct_payables_usd, 
                     inventory_value_usd, payment_terms, brand, grass_date 
             FROM shopee_bi_sbs_mart
@@ -164,50 +159,33 @@ def get_main_df(country, today_date, data_queried):
                 grass_region = '{cntry}'
             '''.format(start_date=m2_sop, end_date=today_date, cntry=country)
         print(query)
-        main_df = spark.sql(query)
-        write_to_csv(main_df, input_file_path + '/main_df.csv', country)
+        main_df = SPARK.sql(query)
+        write_to_csv(main_df, 'main_df', input_file_path + '/main_df.csv')
+        main_df = main_df.toPandas()
     else:
-        username = os.getcwd().split('/')[-1]
-        my_schema = StructType([
-            StructField("category_cluster", StringType()),
-            StructField("supplier_name", StringType()),
-            StructField("sku_id", StringType()),
-            StructField("sourcing_status", StringType()),
-            StructField("cogs_usd", FloatType()),
-            StructField("stock_on_hand", IntegerType()),
-            StructField("inbound_value_usd", FloatType()),
-            StructField("acct_payables_usd", FloatType()),
-            StructField("inventory_value_usd", FloatType()),
-            StructField("payment_terms", StringType()),
-            StructField("brand", StringType()),
-            StructField("grass_date", StringType())
-        ])
-        input_file_path0 = 'hdfs://tl0/user/' + username + '/WC/' + country + '/input_files/main_df'
-        main_df = spark.read.csv(input_file_path0, header=True, schema=my_schema)
+        main_df = pd.read_csv(input_file_path + '/main_df.csv',
+                              encoding='utf-8-sig', index_col=False)
     return main_df
 
 
-def write_to_csv(query_df, output_file_name, country):
+def write_to_csv(query_df, report_directory_name, output_file_name):
     '''
     This function writes the spark dataframe to a csv file
     :param query_df: spark dataframe
     :type query_df: spark dataframe
     :param output_file_name: Name of Output File
     :type output_file_name: str
-    :param country: country
-    :type country: str
+    :param report_directory_name: Name of Report Directory
+    :type report_directory_name: str
     :return:
     '''
     print("Output File Name: ", output_file_name)
     req_headers = query_df.columns
     username = os.getcwd().split('/')[-1]
-    output_filename = 'user/{}/tmp.csv'.format(username)
+    output_filename = 'user/{u}/{d}/tmp.csv'.format(u=username, d=report_directory_name)
     local_filename = output_file_name
-    query_df.write.format('csv').mode('overwrite')\
-        .options(header='false', escape='"', encoding="UTF-8").save(output_filename)
-    output_file_path = 'hdfs://tl0/user/' + username + '/WC/' + country + '/input_files/main_df'
-    query_df.write.format('csv').mode('overwrite')\
-        .options(encoding="UTF-8").save(output_file_path)
+    query_df.write.format('csv').mode('overwrite'). \
+        options(header='false', escape='"', encoding="UTF-8").save(output_filename)
     subprocess.call('/usr/share/hadoop/bin/hadoop fs -getmerge %s %s' % (
         output_filename, local_filename + "_tmp"), shell=True)
     subprocess.call('/usr/share/hadoop/bin/hadoop fs -rm -r %s' % output_filename, shell=True)
@@ -228,68 +206,56 @@ def main(country, today_date, main_df, supplier_dict):
     :param country: country
     :param today_date: last day of the report
     :param main_df: main data frame
-    :param supplier_dict: a dictionary of country, suppliers pair
+    :param supplier_dict: dictionary of country, suppliers list pair
     '''
     half_time = time.time()
     print("--- %s seconds --- generating data" % (half_time - start_time))
     country_folder_path = './' + country + '/'
-    main_df = main_df.withColumn('grass_date', to_date(col('grass_date')))
-    df_info = main_df.filter(col('grass_date') == today_date)
-    start_date = get_sop(today_date)
-    dates = [(start_date + dt.timedelta(days=x)).strftime("%Y-%m-%d")
-             for x in range((today_date - start_date).days + 1)]
+    main_df['grass_date'] = pd.to_datetime(main_df['grass_date'])
+    main_df['cdate'] = pd.to_datetime(main_df['cdate'])
+    df_info = main_df[main_df['grass_date'] == today_date]
 
-    df_inv_count = df_info.groupBy('supplier_name')\
-        .agg(F.sum('stock_on_hand').alias('inv_count'))
+    df_inv_count = df_info.groupby('supplier_name')['stock_on_hand'].sum().reset_index()
+    df_inv_count.columns = ['supplier_name', 'inv_count']
 
-    df_inv_sorting0 = main_df.select('supplier_name', 'grass_date') \
-        .sort(['grass_date'], ascending=False) \
-        .groupBy('supplier_name')\
-        .agg(F.first('grass_date').alias('grass_date'))
+    df_inv_sorting = main_df.sort_values(['grass_date'], ascending=False) \
+        .groupby(['supplier_name'])['supplier_name', 'grass_date'] \
+        .head(1).dropna(subset=['supplier_name'])
+    df_inv_sorting0 = df_inv_sorting.merge(main_df, on=['supplier_name', 'grass_date'])
+    df_inv_sorting1 = df_inv_sorting0.groupby(['category_cluster', 'supplier_name'])[
+        'inventory_value_usd'].sum().reset_index()
+    df_inv_sorting2 = df_inv_sorting1.sort_values(['supplier_name', 'inventory_value_usd'],
+                                                  ascending=False).reset_index() \
+        .groupby('supplier_name')['supplier_name', 'category_cluster'].head(1).reset_index()
+    df_inv_sorting2 = df_inv_sorting2[['category_cluster', 'supplier_name']]
 
-    df_inv_sorting = df_inv_sorting0.join(main_df, on=['supplier_name', 'grass_date'])\
-        .groupBy(['category_cluster', 'supplier_name'])\
-        .agg(F.sum('inventory_value_usd').alias('inventory_value_usd'))\
-        .sort(['supplier_name', 'inventory_value_usd'], ascending=False)\
-        .groupBy('supplier_name')\
-        .agg(F.first('category_cluster').alias('category_cluster'))\
-        .select('category_cluster', 'supplier_name')
+    df_inv_count = df_inv_sorting2.merge(df_inv_count, on=['supplier_name'], how='left')
+    df_inv_sum = df_info.groupby('supplier_name')['inventory_value_usd'].sum().reset_index()
 
-    df_inv_count = df_inv_sorting.join(df_inv_count, on=['supplier_name'], how='left')
+    df_sku_count = df_info.groupby('supplier_name')['sku_id'].count().reset_index()
+    df_sku_count.columns = ['supplier_name', 'no_skus_WH']
+    df_info0 = df_sku_count.merge(df_inv_count, on=['supplier_name'], how='left')
 
-    df_inv_sum = df_info.groupBy('supplier_name')\
-        .agg(F.sum('inventory_value_usd').alias('inventory_value_usd'))
-
-    df_sku_count = df_info.groupBy('supplier_name')\
-        .agg(F.countDistinct('sku_id').alias('no_skus_WH'))
-
-    df_info0 = df_sku_count.join(df_inv_count, on=['supplier_name'], how='left')
-
-    df_payment = df_info.groupBy('supplier_name')\
-        .agg(F.first('payment_terms').alias('payment_terms'))
-
-    df_last_month = main_df.filter((col('grass_date') >= today_date - dt.timedelta(days=30))
-                                   & (col('grass_date') <= today_date)).dropDuplicates()
-    brands_df = df_last_month.select('supplier_name', 'brand')\
-        .filter(col('brand') != 'nan')
+    df_payment = df_info.groupby('supplier_name')['supplier_name', 'payment_terms']. \
+        head(1).reset_index(drop=True)
+    df_last_month = main_df[(main_df['grass_date'] >= today_date - dt.timedelta(days=30))
+                            & (main_df['grass_date'] <= today_date)]
+    df_last_month.drop_duplicates(inplace=True)
+    brands_df = df_last_month[['supplier_name', 'brand']]
+    brands_df = brands_df[brands_df.brand != 'nan']
     number_of_top_brands = 3
-    supplier_names = set(brands_df.select('supplier_name')
-                         .dropDuplicates()
-                         .toPandas()['supplier_name']
-                         .to_list())
-    brand_count_df = brands_df.groupBy(['supplier_name', 'brand']).count()
+    supplier_names = set(brands_df['supplier_name'].to_list())
+    brand_count_df = brands_df.groupby(['supplier_name', 'brand']).size()
     # get nlargest per subgroup
-    window = Window.partitionBy(brand_count_df['supplier_name'])\
-        .orderBy(brand_count_df['count'].desc())
-    brand_count_top_3_df = brand_count_df.select('*', F.rank().over(window).alias('rank'))\
-        .filter(col('rank') <= number_of_top_brands)\
-        .drop('count', 'rank')
-    brand_count_top_3_df = brand_count_top_3_df.toPandas()
+    brand_count_top_3_df = brand_count_df.groupby(['supplier_name'], group_keys=False).apply(
+        lambda subgroup: subgroup.nlargest(number_of_top_brands))
+    # drop count column and reset_index
+    brand_count_top_3_df = brand_count_top_3_df.reset_index().drop(columns=0)
     # final brands dataframe in desired output
     top_brands_cols = ['supplier_name', 'brand_1', 'brand_2', 'brand_3']
     top_brands_df = pd.DataFrame(columns=top_brands_cols)
     for supplier in supplier_names:
-        slice_df = brand_count_top_3_df[(brand_count_top_3_df.supplier_name == supplier)].\
+        slice_df = brand_count_top_3_df[(brand_count_top_3_df.supplier_name == supplier)]. \
             reset_index()
         three_brands = dict()
         for i in range(number_of_top_brands):
@@ -306,71 +272,80 @@ def main(country, today_date, main_df, supplier_dict):
 
     top_brands_df = top_brands_df.reset_index(drop=True)
     top_brands_df.fillna('n.a.', inplace=True)
-    my_schema = StructType([StructField("supplier_name", StringType(), True),
-                           StructField("brand_1", StringType(), True),
-                           StructField("brand_2", StringType(), True),
-                           StructField("brand_3", StringType(), True)])
-    top_brands_df = sqlContext.createDataFrame(top_brands_df, schema=my_schema)
+    df_info1 = df_info0.merge(df_inv_sum, on=['supplier_name'], how='left')
+    df_info2 = df_info1.merge(top_brands_df, on=['supplier_name'], how='left')
+    df_info3 = df_info2.merge(df_payment, on=['supplier_name'], how='left')
 
-    df_info1 = df_info0.join(df_inv_sum, on=['supplier_name'], how='left')
-    df_info2 = df_info1.join(top_brands_df, on=['supplier_name'], how='left')
-    df_info3 = df_info2.join(df_payment, on=['supplier_name'], how='left')
+    df_repln = main_df[['supplier_name', 'inbound_value_usd', 'cdate', 'grass_date', 'color']]
+    df_repln['is_replenishment'] = np.where(df_repln['cdate']
+                                            < df_repln['grass_date'].astype('datetime64[M]'), 1, 0)
+    df_repln['inb_repln_usd'] = df_repln['inbound_value_usd'] * df_repln['is_replenishment']
+    df_repln['is_green_repln'] = np.where((df_repln['color'] == 'Green')
+                                          & (df_repln['is_replenishment'] == 1), 1, 0)
+    df_repln['green_repln_usd'] = df_repln['inbound_value_usd'] * df_repln['is_green_repln']
+    df_repln1 = df_repln.groupby(['supplier_name',
+                                  pd.Grouper(key='grass_date', freq='M')]) \
+        [['inb_repln_usd', 'green_repln_usd']].sum()
+    df_repln2 = df_repln1.pivot_table(values='inb_repln_usd', index='supplier_name', columns='grass_date') \
+        .reset_index()
+    df_green_repln = df_repln1.pivot_table(values='green_repln_usd', index='supplier_name', columns='grass_date') \
+        .reset_index()
+    df_repln2.columns = ['supplier_name', 'inb_repln_m2', 'inb_repln_m1', 'inb_repln_m0']
+    df_green_repln.columns = ['supplier_name', 'green_repln_m2', 'green_repln_m1', 'green_repln_m0']
 
-    df_total_sum = main_df.groupBy(['supplier_name', 'grass_date'])\
-        .agg(F.sum('cogs_usd').alias('cogs_usd'),
-             F.sum('acct_payables_usd').alias('acct_payables_usd'),
-             F.sum('inventory_value_usd').alias('inventory_value_usd'),
-             F.sum('inbound_value_usd').alias('inbound_value_usd'))
+    eoms = get_eoms(today_date)
+    df_eom_inv = main_df[['supplier_name', 'inventory_value_usd', 'grass_date', 'color']]
+    df_eom_inv0 = df_eom_inv[(df_eom_inv['grass_date']).isin(eoms)]
 
-    df_total_sum = df_total_sum.withColumn('grass_date',
-                                           F.udf(lambda d: d.strftime('%Y-%m-%d'),
-                                                 StringType())(col('grass_date')))
+    df_black_inv = df_eom_inv0[df_eom_inv0['color'] == 'Black']
+    df_black_inv0 = df_black_inv.groupby(['supplier_name', 'grass_date']) \
+        [['inventory_value_usd']].sum()\
+        .pivot_table(values='inventory_value_usd', index='supplier_name', columns='grass_date')\
+        .reset_index()
+    df_black_inv0.columns = ['supplier_name', 'black_inv_m2', 'black_inv_m1', 'black_inv_m0']
+    df_eom_inv1 = df_eom_inv0.groupby(['supplier_name', 'grass_date']) \
+        [['inventory_value_usd']].sum()\
+        .pivot_table(values='inventory_value_usd', index='supplier_name', columns='grass_date')\
+        .reset_index()
+    df_eom_inv1.columns = ['supplier_name', 'eom_inv_m2', 'eom_inv_m1', 'eom_inv_m0']
+    df_eom_inv2 = df_eom_inv1.merge(df_black_inv0, on=['supplier_name'], how='left')
 
-    col_names = ['category_cluster', 'supplier_name'] + dates
-    df_cogs = df_total_sum.groupBy('supplier_name')\
-        .pivot('grass_date')\
-        .agg(F.first('cogs_usd'))\
-        .join(df_inv_sorting, on=['supplier_name'], how='left')\
-        .select(col_names)\
-        .toPandas()
+    df_total_sum = main_df.groupby(['supplier_name', 'grass_date']).sum().reset_index()
+    df_total_sum['grass_date'] = df_total_sum['grass_date'].dt.strftime('%Y-%m-%d')
+    df_cogs = pd.pivot_table(df_total_sum, values='cogs_usd', index='supplier_name',
+                             columns='grass_date').reset_index()
+    df_cogs = df_inv_sorting2.merge(df_cogs, on=['supplier_name'], how='right')
+    df_payable = pd.pivot_table(df_total_sum, values='acct_payables_usd',
+                                index='supplier_name', columns='grass_date').reset_index()
+    df_payable = df_inv_sorting2.merge(df_payable, on=['supplier_name'], how='right')
+    df_inv_value = pd.pivot_table(df_total_sum, values='inventory_value_usd',
+                                  index='supplier_name', columns='grass_date').reset_index()
+    df_inv_value = df_inv_sorting2.merge(df_inv_value, on=['supplier_name'], how='right')
+    df_inbound = pd.pivot_table(df_total_sum, values='inbound_value_usd',
+                                index='supplier_name', columns='grass_date').reset_index()
+    df_inbound = df_inv_sorting2.merge(df_inbound, on=['supplier_name'], how='right')
 
-    df_payable = df_total_sum.groupBy('supplier_name')\
-        .pivot('grass_date')\
-        .agg(F.first('acct_payables_usd'))\
-        .join(df_inv_sorting, on=['supplier_name'], how='left')\
-        .select(col_names)\
-        .toPandas()
-
-    df_inv_value = df_total_sum.groupBy('supplier_name')\
-        .pivot('grass_date')\
-        .agg(F.first('inventory_value_usd'))\
-        .join(df_inv_sorting, on=['supplier_name'], how='left')\
-        .select(col_names)\
-        .toPandas()
-
-    df_inbound = df_total_sum.groupBy('supplier_name') \
-        .pivot('grass_date') \
-        .agg(F.first('inbound_value_usd'))\
-        .join(df_inv_sorting, on=['supplier_name'], how='left')\
-        .select(col_names)\
-        .toPandas()
-
-    df_info3 = df_info3.select('category_cluster', 'supplier_name', 'no_skus_WH',
-                               'inv_count', 'inventory_value_usd', 'brand_1',
-                               'brand_2', 'brand_3', 'payment_terms').toPandas()
+    df_info3 = df_info3[['category_cluster', 'supplier_name', 'no_skus_WH',
+                         'inv_count', 'inventory_value_usd', 'brand_1',
+                         'brand_2', 'brand_3', 'payment_terms']]
 
     if supplier_dict.get(country) is None:
         df_info4 = df_info3
     else:
         supplier_highlight = supplier_dict.get(country)
-        df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)]\
+        df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)] \
             .reset_index(drop=True)
+
+    df_info5 = df_info4.merge(df_repln2, on=['supplier_name'], how='left')
+
+    # todo: write new df_info5 into excel, df_info4 merge df_inbound, merge df_repln2,
+    #  merge df_green_repln, merge df_eom_inv2 take percentage
 
     path = country_folder_path + 'Weekly_wc_template.xlsx'
     wb_obj = openpyxl.load_workbook(path)
     main_ws = wb_obj['Tracking']
     main_ws['B1'] = today_date
-    for df_index, row in df_info4.iterrows():
+    for df_index, row in df_info5.iterrows():
         for col_index in range(df_info4.shape[1]):
             cell_index = get_column_letter(col_index + 1) + str(df_index + 4)
             main_ws[cell_index] = row[col_index]

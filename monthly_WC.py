@@ -15,6 +15,8 @@ import openpyxl
 import yaml
 from openpyxl.utils import get_column_letter
 from pyspark.sql import SparkSession
+import time
+start_time = time.time()
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -138,14 +140,16 @@ def get_main_df(country, today_date, data_queried):
             SELECT category_cluster, supplier_name, sku_id, sourcing_status, 
                     cogs_usd, stock_on_hand, inbound_value_usd, acct_payables_usd, 
                     inventory_value_usd, payment_terms, brand, grass_date 
-            from shopee_bi_sbs_mart
-            where
+            FROM shopee_bi_sbs_mart
+            WHERE
+                supplier_name is NOT NULL
+            AND
                 grass_date >= date('{start_date}')
-            and
+            AND
                 grass_date <= date('{end_date}')
             AND
                 purchase_type = 'Outright'
-            and 
+            AND 
                 grass_region = '{cntry}'
             '''.format(start_date=m2_sop, end_date=today_date, cntry=country)
         print(query)
@@ -178,7 +182,7 @@ def write_to_csv(query_df, report_directory_name, output_file_name):
         options(header='false', escape='"', encoding="UTF-8").save(output_filename)
     subprocess.call('/usr/share/hadoop/bin/hadoop fs -getmerge %s %s' % (
         output_filename, local_filename + "_tmp"), shell=True)
-    subprocess.call('/usr/share/hadoop/bin/hadoop fs -rmr %s' % output_filename, shell=True)
+    subprocess.call('/usr/share/hadoop/bin/hadoop fs -rm -r %s' % output_filename, shell=True)
     db_input_file = open(local_filename + "_tmp", 'rb')
     print(db_input_file)
     db_output_file = open(local_filename, 'wb')
@@ -198,6 +202,8 @@ def main(country, today_date, main_df, supplier_dict):
     :param main_df: main data frame
     :param supplier_dict: dictionary of country, suppliers list pair
     '''
+    half_time = time.time()
+    print("--- %s seconds --- generating data" % (half_time - start_time))
     country_folder_path = './' + country + '/'
     main_df['grass_date'] = pd.to_datetime(main_df['grass_date'])
     df_info = main_df[main_df['grass_date'] == today_date]
@@ -326,6 +332,8 @@ def main(country, today_date, main_df, supplier_dict):
                       encoding="utf-8-sig")
     result_dict = {'tracking': df_info3, 'payable': df_payable, 'cogs': df_cogs,
                    'inventory': df_inv_value, 'inbound': df_inbound, 'tracking_yaml': df_info4}
+    final_time = time.time()
+    print("--- %s seconds ---processing time" % (final_time - half_time))
     return result_dict
 
 
