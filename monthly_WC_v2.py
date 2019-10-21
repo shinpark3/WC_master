@@ -311,6 +311,12 @@ def main(country, today_date, main_df, supplier_dict):
     df_eom_inv2 = df_eom_inv1.merge(df_black_inv0, on=['supplier_name'], how='left')
 
     df_total_sum = main_df.groupby(['supplier_name', 'grass_date']).sum().reset_index()
+    df_monthly_inbound = df_total_sum.groupby(['supplier_name',
+                                               pd.Grouper(key='grass_date', freq='M')]) \
+        [['inbound_value_usd']].sum() \
+        .pivot_table(values='inbound_value_usd', index='supplier_name', columns='grass_date') \
+        .reset_index()
+    df_monthly_inbound.columns = ['supplier_name', 'inb_m2', 'inb_m1', 'inb_m0']
     df_total_sum['grass_date'] = df_total_sum['grass_date'].dt.strftime('%Y-%m-%d')
     df_cogs = pd.pivot_table(df_total_sum, values='cogs_usd', index='supplier_name',
                              columns='grass_date').reset_index()
@@ -336,10 +342,28 @@ def main(country, today_date, main_df, supplier_dict):
         df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)] \
             .reset_index(drop=True)
 
-    df_info5 = df_info4.merge(df_repln2, on=['supplier_name'], how='left')
+    df_info5 = df_info4.merge(df_monthly_inbound, on=['supplier_name'], how='left')\
+        .merge(df_repln2, on=['supplier_name'], how='left')\
+        .merge(df_green_repln, on=['supplier_name'], how='left')\
+        .merge(df_eom_inv2, on=['supplier_name'], how='left')
 
-    # todo: write new df_info5 into excel, df_info4 merge df_inbound, merge df_repln2,
-    #  merge df_green_repln, merge df_eom_inv2 take percentage
+    df_info5['inb_repln_m2_perc'] = df_info5['inb_repln_m2']/ df_info5['inb_m2']
+    df_info5['inb_repln_m1_perc'] = df_info5['inb_repln_m1'] / df_info5['inb_m1']
+    df_info5['inb_repln_m0_perc'] = df_info5['inb_repln_m0'] / df_info5['inb_m0']
+    df_info5['green_repln_m2_perc'] = df_info5['green_repln_m2'] / df_info5['inb_repln_m2']
+    df_info5['green_repln_m1_perc'] = df_info5['green_repln_m1'] / df_info5['inb_repln_m1']
+    df_info5['green_repln_m0_perc'] = df_info5['green_repln_m0'] / df_info5['inb_repln_m0']
+    df_info5['black_inv_m2_perc'] = df_info5['black_inv_m2'] / df_info5['eom_inv_m2']
+    df_info5['black_inv_m1_perc'] = df_info5['black_inv_m1'] / df_info5['eom_inv_m1']
+    df_info5['black_inv_m0_perc'] = df_info5['black_inv_m0'] / df_info5['eom_inv_m0']
+    df_info5 = df_info5[['category_cluster', 'supplier_name', 'no_skus_WH', 'inv_count',
+                         'inventory_value_usd', 'brand_1', 'brand_2', 'brand_3', 'payment_terms',
+                         'inb_repln_m2_perc', 'inb_repln_m1_perc', 'inb_repln_m0_perc',
+                         'green_repln_m2_perc', 'green_repln_m1_perc', 'green_repln_m0_perc',
+                         'black_inv_m2', 'black_inv_m1', 'black_inv_m0',
+                         'black_inv_m2_perc', 'black_inv_m1_perc', 'black_inv_m0_perc']]
+
+    # todo: write new df_info5 into excel
 
     path = country_folder_path + 'Weekly_wc_template.xlsx'
     wb_obj = openpyxl.load_workbook(path)
