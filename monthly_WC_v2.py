@@ -365,13 +365,16 @@ def main(country, today_date, main_df, supplier_dict):
 
     # todo: write new df_info5 into excel
 
-    path = country_folder_path + 'Weekly_wc_template.xlsx'
+    path = country_folder_path + 'Monthly_wc_template.xlsx'
     wb_obj = openpyxl.load_workbook(path)
     main_ws = wb_obj['Tracking']
     main_ws['B1'] = today_date
     for df_index, row in df_info5.iterrows():
-        for col_index in range(df_info4.shape[1]):
+        for col_index in range(9):
             cell_index = get_column_letter(col_index + 1) + str(df_index + 4)
+            main_ws[cell_index] = row[col_index]
+        for col_index in range(9,21):
+            cell_index = get_column_letter(col_index + 6 + 1) + str(df_index + 4)
             main_ws[cell_index] = row[col_index]
 
     write_dict = {
@@ -386,7 +389,7 @@ def main(country, today_date, main_df, supplier_dict):
     }
     days_in_months = get_days_in_months(today_date)
     append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, wb_obj)
-    wb_obj.save(country_folder_path + '/month_{}_sample.xlsx'.format(country))
+    wb_obj.save(country_folder_path + '/month_{}_sample_v2.xlsx'.format(country))
 
     df_info3.to_csv(country_folder_path + '{}_tracking_tab_v2.csv'.format(country),
                     encoding="utf-8-sig")
