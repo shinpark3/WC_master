@@ -1,0 +1,4 @@
+category_cluster,supplier_name,no_skus_WH,inv_count,inventory_value_usd,brand_1,brand_2,brand_3,payment_terms
+EL,VN_Supplier_A,3,40,800,Abrand1,Abrand2,n.a.,30 NET
+FMCG,VN_Supplier_B,3,35,800,Bbrand1,Bbrand2,Bbrand3,7 NET
+lifestyle,VN_Supplier_C,3,110,700,Cbrand2,Cbrand1,n.a.,30 NET

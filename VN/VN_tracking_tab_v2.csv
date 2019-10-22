@@ -1,0 +1,247 @@
+﻿,category_cluster,supplier_name,no_skus_WH,inv_count,inventory_value_usd,brand_1,brand_2,brand_3,payment_terms
+0,FMCG,VN_CHI NHÁNH CTY CP SỮA VIỆT NAM TẠI HÀ NỘI_Outright,202,5348,22619.592,Vinamilk,VINAMILK,vfresh,15 NET
+1,FMCG,VN_CHI NHÁNH CÔNG TY CP ACECOOK VIỆT NAM TẠI HƯNG YÊN _Outright,67,6,43.137253,Acecook,n.a.,n.a.,15 NET
+2,EL,VN_CHI NHÁNH CÔNG TY CỔ PHẦN TẬP ĐOÀN ĐIỆN LẠNH ĐIỆN MÁY VIỆT ÚC_Outright,193,382,7249.3257,Kangaroo,kangaroo,Goldsun,30 NET
+3,FMCG,VN_CHI NHÁNH CÔNG TY TNHH DKSH VIỆT NAM TẠI HÀ NỘI_Outright,620,43480,159168.97,NIVEA,Durex,Nivea,30 NET
+4,FMCG,VN_CHI NHÁNH CÔNG TY TNHH DỊCH VỤ VÀ THƯƠNG MẠI MESA_Outright,334,9274,24467.412,Downy,Pampers,ARIEL,30 NET
+5,EL,VN_CHI NHÁNH CÔNG TY TNHH NHÀ SƠN VÂN_Outright,18,8,225.25648,Sennheiser,Mionix,Roccat,15 NET
+6,Lifestyle,VN_CHẤN LONG_Outright,51,155,290.5901,SDI,SDI Copporation,n.a.,30 NET
+7,EL,VN_CN CTY CP GOLDSUN VN (TP.HN)_OUTRIGHT,113,407,3310.563,Goldsun,goldsun,Sunhouse,30 NET
+8,FMCG,VN_CN CTY CP XNK TM Đài Linh_Outright,7,824,2969.7715,ipek,n.a.,n.a.,30 NET
+9,EL,VN_CN CTY TNHH TM KT TIN HỌC ANH NGỌC (TP-HN)_OUTRIGHT,41,951,15532.491,EZVIZ,D-Link,TP-LINK,30 NET
+10,Lifestyle,VN_CN CÔNG TY CP SÁCH THÁI HÀ_Outright,755,3367,7005.0425,Nhiều tác giả,Wataru WATARI,Tăng Phương,30 NET
+11,FMCG,VN_CN Công Ty TNHH Dinh Dưỡng 3A (Việt Nam) tại Hà Nội_ Outright,237,15196,323411.2,Abbott,Abbott Grow,ABBOTT,15 NET
+12,FMCG,VN_CN Công Ty TNHH Wipro Consumer Care Việt Nam tại Hà Nội_ Outright,6,4608,21042.033,Maxkleen,n.a.,n.a.,30 NET
+13,Lifestyle,VN_CN Công ty CP Phim Thiên Ngân_Outright,1,0,0.0,galaxy,n.a.,n.a.,30 NET
+14,EL,VN_CN Công ty TNHH Phân Phối Synnex FPT_Outright,143,1429,233455.92,ASUS,BUK,FPT,15 NET
+15,FMCG,VN_CN TẠI TPHCM CTY TNHH PHÂN PHỐI SNB_Outright,34,653,5576.262,Glico,Arau Baby,Lec,15 NET
+16,EL,VN_CTY CP CÔNG NGHỆ VIỄN THÔNG PHÚC THỊNH_OUTRIGHT,48,2197,11740.138,SILICON POWER,TEAMGROUP,Romoss,21 NET
+17,EL,VN_CTY CP DI ĐỘNG THÔNG MINH_OUTRIGHT,8,2,326.64127,Oppo,n.a.,n.a.,30 NET
+18,EL,VN_CTY CP THẾ GIỚI SỐ_OUTRIGHT,178,2651,86200.88,Xiaomi,DELL,YI,30 NET
+19,Lifestyle,VN_CTY CP TẬP ĐOÀN SUNHOUSE_OUTRIGHT,182,2261,16995.639,SUNHOUSE,Sunhouse,sunhouse,30 NET
+20,EL,VN_CTY CP ĐIỆN THOẠI DI ĐỘNG THÀNH CÔNG_OUTRIGHT,11,0,0.0,BAVAPEN,n.a.,n.a.,15 NET
+21,Lifestyle,VN_CTY CP ĐẦU TƯ CÔNG NGHỆ Á CHÂU_OUTRIGHT,10,85,1785.9895,Luminarc,SUNHOUSE,n.a.,30 NET
+22,FMCG,VN_CTY CỔ PHẦN DƯỢC MỸ PHẨM_OUTRIGHT,7,474,1579.1252,Jomi,Mayan,n.a.,30 NET
+23,EL,VN_CTY CỔ PHẦN PHÂN PHỐI GIA HUY_OUTRIGHT,58,213,3848.4294,Comet,COMET,No brand,21 NET
+24,Lifestyle,VN_CTY TNHH COMMO VINA_Outright,3,119,846.1216,Glasslock,LOCK&LOCK,n.a.,30 NET
+25,Lifestyle,VN_CTY TNHH GP ĐÓNG GÓI MAGIX VN_Ouright,1,0,0.0,Shopee,n.a.,n.a.,30 NET
+26,EL,VN_CTY TNHH GTS HẢI ĐĂNG_OUTRIGHT,17,0,0.0,SUNHOUSE,Sunhouse,Alaska,21 NET
+27,FMCG,VN_CTY TNHH KINH DOANH THƯƠNG MẠI VÀ DỊCH VỤ VINDS_OUTRIGHT,165,0,0.0,Yves Rocher,Maybelline New York,REVLON,30 NET
+28,EL,VN_CTY TNHH MTV KỸ THUẬT & KHOA HỌC OPPO_OUTRIGHT,3,0,0.0,Oppo,n.a.,n.a.,30 NET
+29,FMCG,VN_CTY TNHH MTV PHẠM ANH_OUTRIGHT,24,92,35.426563,Meizan,Simply,Neptune,15 NET
+30,Lifestyle,VN_CTY TNHH MTV THIÊN SAO KIM_OUTRIGHT,5,716,2310.161,Homeeasy,n.a.,n.a.,30 NET
+31,EL,VN_CTY TNHH MUA BÁN QUẢNG CÁO TRỰC TUYẾN 24 GIỜ_OUTRIGHT,1,0,0.0,Hitops,No Brand,n.a.,30 NET
+32,Lifestyle,VN_CTY TNHH MỘT THÀNH VIÊN HOA NHÀ BẾP_OUTRIGHT,28,445,3355.508,FIVESTAR,ILO,No Brand,30 NET
+33,EL,VN_CTY TNHH PHÂN PHỐI FPT (FDC)_OUTRIGHT,6,0,0.0,Nokia,n.a.,n.a.,30 NET
+34,EL,VN_CTY TNHH PHÂN PHỐI SYNNEX FPT_OUTRIGHT,1,0,0.0,Nokia,ASUS,n.a.,30 NET
+35,Lifestyle,VN_CTY TNHH R STAR_Outright,25,19,59.392174,Star Kids,Pamama,No brand,30 NET
+36,EL,VN_CTY TNHH SAMSUNG ELECTRONICS VN THÁI NGUYÊN-CN HCM_OUTRIGHT,185,1852,294134.34,Samsung,n.a.,n.a.,30 NET
+37,EL,VN_CTY TNHH SX TM VÀ DV ALOBUY VN_OUTRIGHT,19,0,0.0,Comet,SENKO,Tashuan,30 NET
+38,EL,VN_CTY TNHH THƯƠNG MẠI DỊCH VỤ QUỐC VIỆT_OUTRIGHT,10,0,0.0,logitech,n.a.,n.a.,30 NET
+39,EL,VN_CTY TNHH THƯƠNG MẠI KỸ THUẬT DIỆP KHÁNH_OUTRIGHT,7,0,0.0,Sandisk,n.a.,n.a.,30 NET
+40,Fashion,VN_CTY TNHH THỜI TRANG MẶT TRỜI ĐỎ_OUTRIGHT,388,4557,21589.352,Verchini,VERCHINI,n.a.,15 NET
+41,Lifestyle,VN_CTY TNHH TM DV XUẤT NHẬP KHẨU CUNG CẦU_OUTRIGHT,1,0,0.0,Uncle Bills,n.a.,n.a.,30
+42,EL,VN_CTY TNHH TM DV ĐIỆN THOẠI KIM THANH_OUTRIGHT,2,0,0.0,Samsung,n.a.,n.a.,30 NET
+43,FMCG,VN_CTY TNHH TM VÀ DV DƯỢC PHẨM ANH MINH_OUTRIGHT,1,0,0.0,Amibebe,n.a.,n.a.,30 NET
+44,Lifestyle,VN_Centum Korea (YG Official Shop)_Outright,23,1288,39808.273,YG ENTERTAINMENT,n.a.,n.a.,10 NET
+45,Fashion,VN_Chi Nhánh Công ty TNHH Bình Tiên Đồng Nai_Ouright,62,0,0.0,Biti's,n.a.,n.a.,30 NET
+46,Lifestyle,VN_Chi nhánh Cty CP TM – DV Cổng Vàng (TP. Hà Nội)_Outright,2,0,0.0,Golden Gate,n.a.,n.a.,30 NET
+47,Lifestyle,VN_Chi nhánh Cty CP Văn hóa & Truyền thông Nhã Nam_Outright,1018,3472,8290.241,Nhiều tác giả,Sasbadi Group, Hiroshima Reiko,30 NET
+48,EL,VN_Chi nhánh Công ty CP Kỹ Thuật Công Nghệ Nam Thành_Outright,33,181,1168.2402,TP-LINK,Bluener,TP-Link,30 NET
+49,FMCG,VN_Chi nhánh Công ty TNHH DV Và TM MESA_Outright,38,3185,10591.554,Old Spice,OLAY,Gillette,30 NET
+50,FMCG,VN_Chi nhánh Công ty TNHH Phân Phối Tiên Tiến _ outright,124,11220,234534.05,Enfa,Solite,AFC,30 NET
+51,Lifestyle,VN_Chi nhánh Công ty TNHH Thương mại Phúc Mã_Outright,326,1102,905.3395,Artline,n.a.,n.a.,30 NET
+52,FMCG,VN_Chi nhánh Công ty TNHH Thực phẩm Orion Vina_outright,17,243,662.766,Orion,Lime Orange,n.a.,30 NET
+53,Lifestyle,VN_Chi nhánh Nhà xuất bản Kim Đồng Tại Tphcm_Outright,5130,16133,20941.46,Nhiều tác giả,Yoshito Usui,Adachi Toka,30 NET
+54,Lifestyle,VN_Chi nhánh Phía Nam Công ty CP văn hóa Huy Hoàng_Outright,1610,13358,20557.057,Dale Carnegie,Đức Anh,Ngọc Hà,30 NET
+55,EL,VN_Chi nhánh Tây Ninh_Công ty CP viễn thông FPT_Outright,8,662,28197.39,FPT,n.a.,n.a.,15 NET
+56,FMCG,VN_Chi nhánh Tại TPHCM_Công Ty TNHH Thế Giới Tuổi Thơ SNB_Outright,27,0,0.0,Arau Baby,Lec,LEC,15 NET
+57,FMCG,VN_Chi nhánh công ty TNHH Miwon Việt Nam_Outright,28,2875,821.08514,Miwon,Chung Jung One,O'food,30 NET
+58,FMCG,VN_Cty CP Angel Việt Nam_Outright,152,2136,6502.6577,Wesser,agassi,agi,30 NET
+59,EL,VN_Cty CP PTDV Sen Vàng_Outright,26,75,712.6719,Hasu,PANSY,HASU,30 NET
+60,FMCG,VN_Cty CP Quốc Tế Thiên Anh_Outright,46,0,0.0,DABO,benew,Benew,30 NET
+61,Lifestyle,VN_Cty TNHH Lâm Ngọc Việt_Outright,83,458,1441.3424,antona,Antona,Lovely Kid,15 NET
+62,FMCG,VN_CÔNG TY CP DIANA UNICHARM_Outright,750,61518,319989.4,Bobby,moony,Silcot,21 NET
+63,Lifestyle,VN_CÔNG TY CP ETIC VIỆT NAM_Ouright,6,0,0.0,ETIC,n.a.,n.a.,30 NET
+64,FMCG,VN_CÔNG TY CP MỸ PHẨM VÀ THỜI TRANG BNF_Outright,71,0,0.0,SeaNtree,SeaNTree,n.a.,30 NET
+65,Lifestyle,VN_CÔNG TY CP PHÂN PHỐI THIẾT BỊ ĐIỆN KTG_outright,29,381,995.4899,COMET,comet,Mitsubishi,30 NET
+66,FMCG,VN_CÔNG TY CP QUỐC TẾ NAM THÀNH_Outright,78,165,845.3833,Kerasys,KERASYS,Showermate,30 NET
+67,FMCG,VN_CÔNG TY CP SX VÀ XNK ĐỨC NAM_Outright,18,415,1199.8829,Byphasse,Tippys,Ola,30 NET
+68,FMCG,VN_CÔNG TY CP THƯƠNG MẠI DỊCH VỤ SẢN XUẤT HƯƠNG THỦY_Outright,57,3391,25706.807,Anmum,Anlene,No Brand,30 NET
+69,Lifestyle,VN_CÔNG TY CỔ PHẦN TẬP ĐOÀN ĐIỆN LẠNH ĐIỆN MÁY VIỆT ÚC_OUTRIGHT,101,1293,11838.81,Kangaroo,kangaroo,n.a.,30 NET
+70,Lifestyle,VN_CÔNG TY TNHH BÁN LẺ PHƯƠNG NAM_Outright,701,3168,10754.765,Thích Nhất Hạnh,Nguyễn Tường Bách,Cư Sĩ Nguyên Giác,30 NET
+71,Fashion,VN_CÔNG TY TNHH CHÂU HOÀNG BÁCH_Outright,89,887,3871.6255,cnt's,cnt’s,Lata,15 NET
+72,EL,VN_CÔNG TY TNHH CÔNG NGHỆ SAO VIỆT_OUTRIGHT,4,0,0.0,Forme,n.a.,n.a.,30 NET
+73,EL,VN_CÔNG TY TNHH DAELUX VIỆT NAM_OUTRIGHT,35,923,7948.0234,Daewoo,Daelux,DAEWOO,30 NET
+74,Lifestyle,VN_CÔNG TY TNHH DANH PHONG_Ouright,4,0,0.0,Hoàng Thiên Hà,No Brand,n.a.,30 NET
+75,FMCG,VN_CÔNG TY TNHH DINH DƯỠNG 3A_Outright,60,89,0.0,Abbott,ABBOTT,Similac,15 NET
+76,FMCG,VN_CÔNG TY TNHH DKSH VIỆT NAM_Outright,291,16347,65980.49,Eucerin,Nivea,NIVEA,30 NET
+77,Lifestyle,VN_CÔNG TY TNHH DÀNH CHO BÉ YÊU_Outright,55,207,806.3451,Winfun,Toys House,Toys house,30 NET
+78,FMCG,VN_CÔNG TY TNHH DỊCH VỤ THƯƠNG MẠI VÀ XUẤT NHẬP KHẨU ĐẠI THỊNH_Outright,69,622,3785.0786,D-nee,Dnee,n.a.,30 NET
+79,EL,VN_CÔNG TY TNHH DỊCH VỤ VÀ THƯƠNG MẠI XUẤT NHẬP KHẨU H2P HÀ NỘI_Outright,5,0,0.0,hoco.,n.a.,n.a.,15 NET
+80,EL,VN_CÔNG TY TNHH HỒNG ĐẠT _OUTRIGHT,24,151,11399.93,Sharp,n.a.,n.a.,30 NET
+81,Lifestyle,VN_CÔNG TY TNHH IN BAO BÌ MẮT THẦN_OUTRIGHT,4,8932,534.6493,Shopee,No brand,n.a.,10 NET
+82,FMCG,VN_CÔNG TY TNHH KHANG YẾN_Outright,3,0,0.0,Dr.Care,n.a.,n.a.,30 NET
+83,EL,VN_CÔNG TY TNHH LIÊN HIỆP TUỔI TRẺ DI ĐỘNG_OUTRIGHT,7,0,0.0,ZIP Mobile,UMY,n.a.,30 NET
+84,Lifestyle,VN_CÔNG TY TNHH MAY MẶC BẢO HÂN_OUTRIGHT,5,55,165.90619,n.a.,n.a.,n.a.,30 NET
+85,EL,VN_CÔNG TY TNHH MTV PHÁT TRIỂN THƯƠNG MẠI KỶ NGUYÊN_OUTRIGHT,37,359,9626.696,Philips,Midea,LOCK&LOCK,21 NET
+86,Lifestyle,VN_CÔNG TY TNHH MÙNG 1 THÁNG 6_Ouright,16,15,107.30037,Pipo VietNam,Pipovietnam,n.a.,30 NET
+87,FMCG,VN_CÔNG TY TNHH MỸ PHẨM SHISEIDO VIỆT NAM_Outright,275,45395,235479.34,Senka,Tsubaki,Za,30 NET
+88,FMCG,VN_CÔNG TY TNHH PHÂN PHỐI TIÊN TIẾN _Outright,78,1189,3895.434,Enfa,AFC,Cosy,30 NET
+89,FMCG,VN_CÔNG TY TNHH PHỐ MỸ PHẨM_OUTRIGHT,1,0,0.0,Dr.C.Tuna,n.a.,n.a.,30 NET
+90,FMCG,VN_CÔNG TY TNHH SX TM DV LÊ MÂY_Outright,349,1353,12620.025,GOO.N,ChuChuBaby,Cerelac,30 NET
+91,FMCG,VN_CÔNG TY TNHH SẢN XUẤT - TM TRƯỜNG PHÚ _Outright,70,1446,3467.7805,Kodomo,Kirei Kirei,n.a.,30 NET
+92,EL,VN_CÔNG TY TNHH SẢN XUẤT THƯƠNG MẠI LIÊN HIỆP_Ouright,3,0,0.0,LiFan,n.a.,n.a.,30 NET
+93,EL,VN_CÔNG TY TNHH THƯƠNG MẠI DẦU TƯ XÂY DỰNG SÁNG TẠO_Outright,97,752,22190.707,SONY,Sony,sony,21 NET
+94,EL,VN_CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ IGIFT VIET NAM_Outright,65,3917,14749.518,Yoobao,JOYROOM,Baseus,30 NET
+95,Lifestyle,VN_CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VĂN HÓA ĐINH TỊ_Outright,2231,17437,34634.242,Nhiều tác giả,Diệp Lạc Vô Tâm,Usbone,30 NET
+96,FMCG,VN_CÔNG TY TNHH THƯƠNG MẠI VÀ XUẤT NHẬP KHẨU MINH CHÂU_Outright,5,0,0.0,Simply,Meizan,Neptune,30 NET
+97,FMCG,VN_CÔNG TY TNHH THỜI GIÁ SÀI GÒN_Outright,61,0,0.0,AVÈNE,SVR,A - Derma,30 NET
+98,EL,VN_CÔNG TY TNHH TM TỔNG HỢP CÔNG NGHỆ VIỆT_Outright,17,4041,5526.388,VietTech,PLEXTONE,VIETTECH,15 NET
+99,Fashion,VN_CÔNG TY TNHH TM-SX DT-H.M.B_Ouright,6,0,0.0,No Brand,No brand,n.a.,30 NET
+100,Lifestyle,VN_CÔNG TY TNHH TMDV GIA BÙI _Outright,2,1,7.9721155,Shopee,n.a.,n.a.,15 NET
+101,Lifestyle,VN_CÔNG TY TNHH TRUNG HUY_Ouright,11,0,0.0,No Brand,Lionstar,n.a.,30 NET
+102,FMCG,VN_CÔNG TY TNHH VIETPOWERLIFE_Outright,6,870,2140.2466,Woongjin,Samyang,n.a.,15 NET
+103,Fashion,VN_CÔNG TY TNHH YOURS.VN_Outright,10,1,5.171102,Yours,n.a.,n.a.,15 NET
+104,EL,VN_Công Ty Cp đầu tư công nghệ điện tử Asanzo_Outright,87,176,15144.112,Asanzo,n.a.,n.a.,14 NET
+105,FMCG,VN_Công Ty Cổ Phần 7S Sài Gòn_ Outright,2,94,365.2326,Helen Harper,n.a.,n.a.,30 NET
+106,Lifestyle,VN_Công Ty Cổ Phần Sách Bách Việt_ Outright,1,0,0.0,n.a.,n.a.,n.a.,30 NET
+107,FMCG,VN_Công Ty Cổ Phần TM & DV Sagen_ Outright,30,870,6445.8955,Christian Lenart,Etiaxil,chateau rouge,30 NET
+108,Lifestyle,VN_Công Ty Cổ Phần Thực Phẩm Blue Star_ Outright,1,314,369.0287,Baskin Robbins,n.a.,n.a.,15 NET
+109,Lifestyle,VN_Công Ty Cổ Phần Việt Tinh Anh_Outright,11,3275,33207.57,MATTEL,LEGO,MATTEL GAMES,30 NET
+110,FMCG,VN_Công Ty TNHH Kinh Doanh Thương Mại Dịch Vụ Đầu Tư Hải Đăng_Outright,3,689,4967.2817,NIVEA,n.a.,n.a.,Immediately
+111,EL,VN_Công Ty TNHH MD Consumer Electric Appliance Việt Nam_ Outright,10,78,1289.1322,Midea,MIDEA,n.a.,30 NET
+112,FMCG,VN_Công Ty TNHH SX và TM Quốc Tế Việt Sing _ Outright,70,716,6387.0693,JO,n.a.,n.a.,30 NET
+113,Lifestyle,VN_Công Ty TNHH Văn Hóa và truyền thông Skybooks Việt Nam_Outright,228,2168,4617.8403,Nhiều tác giả,Pelangi,Beth Evans,30 NET
+114,EL,VN_Công Ty TNHH Đầu Tư Công Nghệ NDTL_ Outright,1,19,3126.1655,Eufy,n.a.,n.a.,30 NET
+115,FMCG,VN_Công Ty TNHH Đầu Tư Thương Mại Sơn Kiều_ Outright,2,0,0.0,babyhop,n.a.,n.a.,30 NET
+116,FMCG,VN_Công ty  TNHH Đào Minh Tiên_Outright,56,9829,67306.31,NARUKO,Kotex,n.a.,30 NET
+117,FMCG,VN_Công ty CP Acecook Việt Nam_Outright,43,9,26.897984,Acecook,n.a.,n.a.,15 NET
+118,EL,VN_Công ty CP BIG SUN Việt Nam_Outright,8,6,21.977182,Bigsun,n.a.,n.a.,30 NET
+119,FMCG,VN_Công ty CP Chuỗi thực phẩm TH_Outright,52,44,42.480774,TH true milk,TH,No brand,30 NET
+120,EL,VN_Công ty CP Công Nghệ Elite _ outright,1,0,0.0,Samsung,n.a.,n.a.,Immediately
+121,EL,VN_Công ty CP Hội Tụ Thông Minh_Outright,53,2400,5123.2407,Rapoo,Microsoft,COOLPAD,21 NET
+122,EL,VN_Công ty CP MASSCOM VIỆT NAM_Outright,38,19,402.484,MASSTEL,n.a.,n.a.,21 NET
+123,Fashion,VN_Công ty CP May NANIO_Outright,22,1,2.3113103,n.a.,n.a.,n.a.,30 NET
+124,EL,VN_Công ty CP Microsun_Outright,1,22,146.51456,Tenda,n.a.,n.a.,30 NET
+125,EL,VN_Công ty CP Phân Phối SP Công Nghệ Cao Dầu Khí_Ouright,43,3,202.80905,Itel,Tecno,n.a.,30 NET
+126,Lifestyle,VN_Công ty CP Sách Alpha- chi nhánh tại TPHCM_Outright,1320,9206,32246.27,Nhiều tác giả,Hoàng Xuân Việt,Vương Hiểu Lỗi,30 NET
+127,Lifestyle,VN_Công ty CP Sách Thái Hà_Outright,723,13000,25984.723,Nhiều tác giả,Phan Thị Hồ ĐIệp,Kazuhiko Toyota,30 NET
+128,Lifestyle,VN_Công ty CP Thương Mại Dịch Vụ Á Âu_Outright,14,428,1223.9934,Herevin,TRAMONTINA,Kangaroo,30 NET
+129,FMCG,VN_Công ty CP Thực Phẩm Dinh Dưỡng Nutifood Bình Dương_Outright,53,390,2536.541,Nutifood,Nuti IQ,GrowPlus,30 NET
+130,FMCG,VN_Công ty CP Trung tâm thương mại Lotte Việt Nam_ Chi nhánh Đống Đa_Outright,881,845,2040.2983,Ottogi,Phúc Long,ottogi,30 NET
+131,EL,VN_Công ty CP Umbala Việt Nam_Outright,6,19,1334.6927,Samsung,Toshiba,Electrolux,15 NET
+132,EL,VN_Công ty CP VIETTRONICS TÂN BÌNH_Outright,15,80,11389.705,VTB,n.a.,n.a.,30 NET
+133,EL,VN_Công ty CP VISCOM_Outright,2,0,0.0,ASUS,n.a.,n.a.,30 NET
+134,EL,VN_Công ty CP Viễn Thông Di Động Thông Minh_Ouright,12,0,0.0,Meizu,n.a.,n.a.,30 NET
+135,Lifestyle,VN_Công ty CP Văn Hóa và Giáo Dục Tân Việt_Outright,751,4954,8748.09,Nhiều tác giả,Giorgia Farnesi,n.a.,30 NET
+136,Lifestyle,VN_Công ty CP Văn hóa Và Truyền Thông Nhã Nam_Outright,1256,19017,45318.08,Nhiều tác giả,Emily Bone,Georges Simenon,30 NET
+137,Lifestyle,VN_Công ty CP Văn hóa Văn Lang_Outright,1168,5004,8498.029,Nhiều tác giả,Balan Wallace,Bob Woodward,30 NET
+138,Lifestyle,VN_Công ty CP Văn hóa Đông A_Outright,525,7211,17384.441,Nhiều tác giả,Đông A,NXB Bang Son,30 NET
+139,EL,VN_Công ty CP XNK Thiết bị Viễn Thông May Mắn_Outright,47,1727,65099.23,Nokia,n.a.,n.a.,15 NET
+140,EL,VN_Công ty CP Xuất nhập khẩu Kỹ nghệ Á Đông_Outright,21,525,5782.7017,PISEN,Pisen,n.a.,30 NET
+141,Lifestyle,VN_Công ty CP sản xuất Dịch vụ Thương Mại Đồ Chơi Phương Nga_Outright,28,52,71.91848,Sluban,Hot Wheels,Barbie,30 NET
+142,FMCG,VN_Công ty CP trung tâm thương mại Lotte Việt Nam - Chi nhánh Tân Bình_Outright,612,168,443.86105,Phúc Long,ottogi,Safoco,30 NET
+143,EL,VN_Công ty CP Điện Tử Điện Lạnh Bình Minh_Ouright,1,0,0.0,Pensonic,n.a.,n.a.,15 NET
+144,FMCG,VN_Công ty CP đầu tu phát triển và thương mại quốc tế Việt An_Outright,7,2678,9941.381,Yến SàoThiên Hoàng,Yến Sào Thiên Hoàng,n.a.,30 NET
+145,Lifestyle,VN_Công ty CP đầu tư thương mại và phát triển Phúc Minh_Outright,450,3737,5793.8257,Evelyn Sue Wong - Tee Sieok Bing,n.a.,n.a.,30 NET
+146,FMCG,VN_Công ty Cp Phú thái TPHCM_Outright,21,165,137.06146,Danisa,Coffee Joy,Kopiko,30 NET
+147,EL,VN_Công ty Cp dịch vụ Phân phối tổng hợp Dầu Khí_Outright,23,22,4091.8264,Asus,DELL,Samsung,21 NET
+148,EL,VN_Công ty Cp Đầu Tư LBM _ Outright,7,83,9717.754,Canon,n.a.,n.a.,30 NET
+149,EL,VN_Công ty Cổ phần Lộc Đại Quý_Outright,12,196,768.1056,Chefman,n.a.,n.a.,21 NET
+150,Fashion,VN_Công ty Cổ phần Sản xuất thương mại Dịch vụ Juno_Outright,225,0,0.0,Juno,n.a.,n.a.,30 NET
+151,FMCG,VN_Công ty Cổ phần Sữa Việt nam_Outright,61,10,0.0,Vinamilk,VINAMILK,ngôi sao phương nam,15 NET
+152,FMCG,VN_Công ty Cổ phần Thực phẩm Dinh Dưỡng Nutifood_Outright,7,96,1182.396,WAKODO,Wakodo,n.a.,30 NET
+153,FMCG,VN_Công ty TNHH Actsone Việt Nam_Outright,8,0,0.0,BbiA,n.a.,n.a.,30 NET
+154,FMCG,VN_Công ty TNHH B.P.V_Outright,34,141,394.57642,BEAUTY FORMULAS,Green Pharmacy,Beauty Formulas,30 NET
+155,EL,VN_Công ty TNHH Công Nghệ ViVo_Outright,73,2488,249675.34,VIVO,n.a.,n.a.,30 NET
+156,Lifestyle,VN_Công ty TNHH Công nghiệp Plus Việt Nam_Outright,46,121,168.4676,PLUS,n.a.,n.a.,45 NET
+157,FMCG,VN_Công ty TNHH Daniel Keith Việt Nam_Outright,114,287,462.92957,echoice,Elastine,Double Rich,30 NET
+158,FMCG,VN_Công ty TNHH Dầu ăn Nguyên Phát_Outright,72,10119,33784.074,Meizan,Simply,POWER100,15 NET
+159,FMCG,VN_Công ty TNHH Dịch Vụ và chế biến Thực phẩm Minh Dương_Outright,315,26562,103913.625,Nestlé,NESCAFE,Cerelac,15 NET
+160,EL,VN_Công ty TNHH Dịch vụ Thương Mại Khang Anh_Outright,3,0,0.0,Samsung,n.a.,n.a.,30 NET
+161,FMCG,VN_Công ty TNHH Earth Corporation Việt Nam_Outright,51,480,572.721,Gift,Ami,Red Foxx,30 NET
+162,Lifestyle,VN_Công ty TNHH For Kids_Outright,60,176,673.6384,Forkids,ForKids,Vietoys,30 NET
+163,FMCG,VN_Công ty TNHH FrieslandCampina Việt Nam_Outright,107,4764,71986.33,Dutch Lady,Friso,Yomost,30 NET
+164,Lifestyle,VN_Công ty TNHH Hansaeyes24 Vina_Outright,53,3060,53845.773,Luminarc,Arcoroc,n.a.,30 NET
+165,Lifestyle,VN_Công ty TNHH Happy Cook_Outright,8,2422,12577.156,Happy Cook,Happycook,n.a.,30 NET
+166,EL,VN_Công ty TNHH IDC Sài Gòn_Outright,26,336,48201.332,LG,No Brand,n.a.,21 NET
+167,FMCG,VN_Công ty TNHH KiYoMi PaPers Viet Nam_Outright,12,12,62.053223,Kiyomi,n.a.,n.a.,30 NET
+168,FMCG,VN_Công ty TNHH Kimberly- Clark Việt Nam_Outright,249,12201,43263.48,Huggies,Kotex,Pampers,21 NET
+169,EL,VN_Công ty TNHH LG ELECTRONICS VIỆT NAM HẢI PHÒNG_Outright,50,1107,284185.8,LG,LOCK&LOCK,n.a.,30 NET
+170,Lifestyle,VN_Công ty TNHH Lâm Ngọc Việt_Outright,2,110,106.17996,antona,n.a.,n.a.,30 NET
+171,EL,VN_Công ty TNHH MTV Công nghệ Tin Học Viễn Sơn_Outright,16,256,60446.676,Samsung,Asus,n.a.,30 NET
+172,Lifestyle,VN_Công ty TNHH MTV Dịch vụ văn hóa Khang Việt_Outright,937,3796,8458.738,n.a.,n.a.,n.a.,30 NET
+173,EL,VN_Công ty TNHH MTV Kỹ Thuật& Khoa Học Vĩnh Khang_Outright,125,5598,682573.25,Oppo,Havit,n.a.,Immediately
+174,EL,VN_Công ty TNHH MTV Thương Mại Xuất Nhập Khẩu Vi Ta_Outright,31,1318,149338.47,Philips,AMTECOR,LG,21 NET
+175,Lifestyle,VN_Công ty TNHH Mai Son Việt Nam_outright,46,197,557.1442,Maped,n.a.,n.a.,30 NET
+176,EL,VN_Công ty TNHH Maxpro_Outright,85,216,617.46094,Remax,n.a.,n.a.,30 NET
+177,EL,VN_Công ty TNHH Máy tính Hoàng Sơn_Outright,1,0,0.0,Canon,n.a.,n.a.,30 NET
+178,EL,VN_Công ty TNHH Một thành viên Thiết bị Số Dmart_Outright,23,149,698.4513,microlab,MICROLAB,n.a.,30 NET
+179,FMCG,VN_Công ty TNHH MỸ PHẨM SNP_Outright,46,2008,2830.9854,SNP,n.a.,n.a.,30 NET
+180,FMCG,VN_Công ty TNHH NGUYÊN PHỐ_Outright,10,824,3458.5454,Nam Anh,Bảo An,Mini Pro,20 NET
+181,Lifestyle,VN_Công ty TNHH Nhân Trí Việt_Outright,819,4794,24770.05,Collins,Khương Lệ Bình,Collins Cobuild,30 NET
+182,FMCG,VN_Công ty TNHH Nước giải khát Coca Cola_Outright,100,4924,16150.979,Coca-Cola,Nutriboost,MUTANT,30 NET
+183,FMCG,VN_Công ty TNHH Nước giải khát Suntory Pepsico Việt Nam _Outright,84,75,175.14862,Pepsi,Mirinda,Twister,30 NET
+184,FMCG,VN_Công ty TNHH Nước giải khát Suntory Pepsico Việt Nam tại Bắc Ninh_Outright,61,10,60.870922,Mirinda,Tea+ Plus,Twister,30 NET
+185,FMCG,VN_Công ty TNHH Nước giải khát Thu Vân_Outright,45,2504,29349.629,Strongbow,Heineken,Tiger,7 NET
+186,FMCG,VN_Công ty TNHH Onpoint_Outright,120,3139,26560.605,Bobby,MamyPoko,moony,30 NET
+187,FMCG,VN_Công ty TNHH PERFETTTI VAN MELLE VIỆT NAM_Outright,198,22532,10675.383,alpenliebe,Chupa Chups,Mentos,30 NET
+188,EL,VN_Công ty TNHH Phân Phối Và Xuất Nhập Khẩu Vũ Tuấn Minh_Outright,11,3,496.44836,Vsmart,n.a.,n.a.,15 NET
+189,Fashion,VN_Công ty TNHH S-Trading,1,0,0.0,No Brand,n.a.,n.a.,30 NET
+190,FMCG,VN_Công ty TNHH SNO_Outright,9,164,578.2232,babyguard,BabyGuard,n.a.,7 NET
+191,EL,VN_Công ty TNHH Sony Electronics Việt Nam_Outright,103,15778,182273.48,Sony,SONY,sony,Immediately
+192,EL,VN_Công ty TNHH Sản xuất Thương mại Dịch vụ Gia Hưng Phát_Outright,5,838,2999.8657,Remax,n.a.,n.a.,30 NET
+193,FMCG,VN_Công ty TNHH Sản xuất Thương mại dịch vụ Tiến Thành_Outright,872,76576,380164.8,Pampers,Downy,Rejoice,30 NET
+194,EL,VN_Công ty TNHH THương mại Gia Thành_Outright,15,25,1742.5046,Electrolux,Panasonic,Midea,15 NET
+195,EL,VN_Công ty TNHH THương mại điện tử DNG_Outright,8,640,14672.813,Sony,Xiaomi,n.a.,15 NET
+196,Lifestyle,VN_Công ty TNHH TM CÔNG NGHIỆP GIẤY VĨNH THỊNH_Outright,109,1328,1088.6587,Double A,n.a.,n.a.,30 NET
+197,EL,VN_Công ty TNHH TM DV XNK Dĩnh Khang_Outright,4,0,0.0,Supor,SUPOR,n.a.,30 NET
+198,FMCG,VN_Công ty TNHH TM Tâm Lệ_Outright,114,321,736.41547,Nestlé,NESCAFE,NAN,15 NET
+199,EL,VN_Công ty TNHH Taka Việt Nam_Outright,3,0,0.0,Taka,n.a.,n.a.,30 NET
+200,EL,VN_Công ty TNHH Thiết Bị Viễn Thông STac VN_Outright,49,241,6123.6816,Honor,honor,n.a.,30 NET
+201,EL,VN_Công ty TNHH Thiết bị Tin Học Hải Anh_Outright,7,43,11950.452,LG,No Brand,logitech,30 NET
+202,Lifestyle,VN_Công ty TNHH Thương Mại Bình Nga_Outright,21,130,516.2875,Wowlen,n.a.,n.a.,30 NET
+203,EL,VN_Công ty TNHH Thương Mại Dịch vụ A Kata_Outright,5,1,27.265799,Panasonic,Cuckoo,n.a.,30 NET
+204,EL,VN_Công ty TNHH Thương Mại dịch vụ xuất nhập khẩu Phan Lê_Outright,11,67,992.69507,Electrolux,Bluestone,Sharp,30 NET
+205,EL,VN_Công ty TNHH Thương Mại điện tư R&m_Outright,26,83,14864.658,Realme,n.a.,n.a.,7 NET
+206,EL,VN_Công ty TNHH Thương mại -đầu tư Phương Linh_Outright,43,3835,18809.975,iWalk,IWalk,n.a.,30 NET
+207,EL,VN_Công ty TNHH Thương mại Dịch Vụ Hai Sáu Sáu_Outright,29,19,3507.339,Toshiba,Panasonic,Ariston,14 NET
+208,FMCG,VN_Công ty TNHH Thương mại Dịch vụ Huệ Thiên Phú_Outright,21,877,1357.8202,Omachi,chin-su,vinacafe,30 NET
+209,FMCG,VN_Công ty TNHH Thương mại dịch vụ Thực Phẩm Nhà hàng Toàn Đức_Outright,1,0,0.0,Omachi,n.a.,n.a.,15 NET
+210,EL,VN_Công ty TNHH Thời Trang và Mỹ Phẩm Duy Anh_Outright,11,0,0.0,Apple,n.a.,n.a.,10 NET
+211,FMCG,VN_Công ty TNHH Thực phẩm Orion Vina_Outright,18,770,1163.3656,Orion,Lime Orange,n.a.,30 NET
+212,FMCG,VN_Công ty TNHH Thực phẩm Pepsico Việt Nam_Outright,42,12713,11793.673,Lay's,Quaker Oats,Lay's stax,30 NET
+213,EL,VN_Công ty TNHH Tiross Miền Nam _Outright,15,69,2548.9224,Tiross,TIROSS,n.a.,30 NET
+214,Fashion,VN_Công ty TNHH Vuông_Outright,38,32,248.70415,Vuông,n.a.,n.a.,21 NET
+215,Lifestyle,VN_Công ty TNHH VĂN HÓA VÀ TRUYỀN THÔNG TRÍ VIỆT_Outright,964,2577,4163.129,Gia Long,F. Scott Fitzgerrld,n.a.,45 NET
+216,Lifestyle,VN_Công ty TNHH Văn hóa Sáng tạo Trí Việt_Outright,1188,12317,23329.969,Nhiều tác giả,First News,Mikhail Samarsky,30 NET
+217,Lifestyle,VN_Công ty TNHH Văn hóa và truyền thông 1980 BOOKS_Outright,422,3040,8894.886,Nhiều tác giả,Takaomi Saki,1980 Edu,30 NET
+218,Lifestyle,VN_Công ty TNHH Văn hóa và truyền thông AZ Việt Nam_Outright,850,7653,18503.79,Nhiều tác giả,Oopsy,Oospy,30 NET
+219,EL,VN_Công ty TNHH Vật Dụng Gia Đình Minh Trí_Outright,9,53,1819.6897,PERFECT,n.a.,n.a.,30 NET
+220,FMCG,VN_Công ty TNHH Wipro Unza Việt Nam_Outright,28,1143,2607.629,Carrie Junior,Maxkleen,Happi Lock,30 NET
+221,Lifestyle,VN_Công ty TNHH phát triển Việt Lên_Outright,1,0,0.0,Shopee,n.a.,n.a.,30 NET
+222,EL,VN_Công ty TNHH Điện Tử SamSung HCM CE Complex - Chi nhánh HCM _Outright,65,1347,244519.56,Samsung,LOCK&LOCK,elmich,30 NET
+223,EL,VN_Công ty TNHH Đầu Tư Công Nghệ Âm Thanh Triệu Gia_Outright,17,59,392.0644,Soundmax,SOUNDMAX,SoundMax,14 NET
+224,Lifestyle,VN_Công ty TNHH Đầu Tư Dịch vụ thương Mại TT_Outright,24,1090,5294.8823,Tmark,n.a.,n.a.,30 NET
+225,FMCG,VN_Công ty TNHH Đầu Tư Thiên Ân_Outright,594,110944,415642.72,Comfort,Dove,Sunlight,30 NET
+226,EL,VN_Công ty TNHH Đầu Tư Đông Dương Hà Nội_Outright,61,22,6538.898,Kindle,Apple,n.a.,15 NET
+227,FMCG,VN_Công ty cp phân phối Quốc Tế Genex_Outright,121,1053,8408.4375,UPASS,UNIMOM,Fatz baby,15 NET
+228,EL,VN_Công ty điện và điện tử TCL (Việt Nam)_Outright,24,124,30636.656,TCL,n.a.,n.a.,30 NET
+229,FMCG,VN_CỬA HÀNG BẢO HỘ LAO ĐỘNG DỤNG CỤ Y TẾ LỘC_OUTRIGHT,1,0,0.0,Nam Anh,n.a.,n.a.,30 NET
+230,Lifestyle,VN_CỬA HÀNG PHƯỚC THÀNH_Outright,14,568,1820.6587,Phước Thành,n.a.,n.a.,30 NET
+231,EL,VN_CỬA HÀNG THANH VY_OUTRIGHT,1,0,0.0,LV Mobile,n.a.,n.a.,15 NET
+232,FMCG,VN_HCM Công ty TNHH Thực phẩm Ân Nam_Outright,68,420,685.3215,Haribo,Pepperidge Farm,Bob's Red Mill,20 NET
+233,Lifestyle,VN_HKD Trịnh Thị Thúy An_Outright,444,31388,111930.65,LOCK&LOCK,Homeeasy,FIVESTAR,30 NET
+234,Fashion,VN_HỘ KINH DOANH DƯƠNG NHẬT TIẾN_Outright,10,4,24.648918,Veithdia,veithdia,n.a.,30 NET
+235,FMCG,VN_HỘ KINH DOANH LÊ BÁ NGỌC_Outright,5,0,0.0,LOCK&LOCK,Muji,No Brand,15 NET
+236,Lifestyle,VN_Hộ Kinh Doanh Phạm Văn Tú_ Outright,28,2293,6975.4717,B&Q,n.a.,n.a.,30 NET
+237,FMCG,VN_Hợp tác xã thương mại Quận 3(Tricoop)_Outright,715,56,29.457848,POND'S,Dove,Clear,10 NET
+238,Fashion,VN_JBS Textile Group A/S_ Outright,88,0,0.0,CR7,n.a.,n.a.,30 NET
+239,Fashion,VN_NGUYỄN TẤN TÀI_Outright,122,511,2617.7842,Lata,LATA,Yuumy,10 NET
+240,Lifestyle,VN_NHÀ SÁCH SAO MAI_Outright,953,2058,2297.4343,Nhiều tác giả,n.a.,n.a.,30 NET
+241,FMCG,VN_TAISUN VIET NAM_Outright,454,2822,29964.5,UniDry,Unifresh,Goodry,30 NET
+242,Lifestyle,VN_VIỆN QUẢN LÝ P.A.C.E_Outright,19,917,3019.6772,n.a.,n.a.,n.a.,30 NET
+243,EL,VN_Warehouse VN_Outright,84,0,0.0,Maybelline New York,mades,Skinfood,30 NET
+244,EL,VN_công ty TNHH MTV -SẢN XUẤT-THƯƠNG MẠI-DỊCH VỤ DTR_Outright,17,3163,26198.133,Energizer,n.a.,n.a.,21 NET
+245,FMCG,vn_Công ty TNHH Thương Mại Song Hằng_outright,184,938,4654.923,Tag,PANTENE,Head and Shoulders,30 NET
