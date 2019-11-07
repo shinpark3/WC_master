@@ -293,6 +293,20 @@ def main(country, today_date, main_df, supplier_dict):
     df_repln2.columns = ['supplier_name', 'inb_repln_m2', 'inb_repln_m1', 'inb_repln_m0']
     df_green_repln.columns = ['supplier_name', 'green_repln_m2', 'green_repln_m1', 'green_repln_m0']
 
+    if today_date.day != calendar.monthrange(today_date.year, today_date.month)[1]:
+        df_repln1_m0 = df_repln[df_repln['grass_date'] >= today_date - dt.timedelta(days=29)]
+        # inbound replenishment
+        df_repln2.drop(['inb_repln_m0'], axis=1, inplace=True)
+        df_repln_m0 = df_repln1_m0.groupby(['supplier_name'])[['inb_repln_usd']].sum()
+        df_repln2 = df_repln2.merge(df_repln_m0, on=['supplier_name'], how='left')
+        df_repln2.columns = ['supplier_name', 'inb_repln_m2', 'inb_repln_m1', 'inb_repln_m0']
+        # green replenishment
+        df_green_repln.drop(['green_repln_m0'], axis=1, inplace=True)
+        df_green_repln_m0 = df_repln1_m0.groupby(['supplier_name'])[['green_repln_usd']].sum()
+        df_green_repln = df_green_repln.merge(df_green_repln_m0, on=['supplier_name'], how='left')
+        df_green_repln.columns = ['supplier_name', 'green_repln_m2', 'green_repln_m1', 'green_repln_m0']
+
+
     eoms = get_eoms(today_date)
     df_eom_inv = main_df[['supplier_name', 'inventory_value_usd', 'grass_date', 'color']]
     df_eom_inv0 = df_eom_inv[(df_eom_inv['grass_date']).isin(eoms)]
@@ -320,6 +334,14 @@ def main(country, today_date, main_df, supplier_dict):
         .pivot_table(values='inbound_value_usd', index='supplier_name', columns='grass_date') \
         .reset_index()
     df_monthly_inbound.columns = ['supplier_name', 'inb_m2', 'inb_m1', 'inb_m0']
+
+    if today_date.day != calendar.monthrange(today_date.year, today_date.month)[1]:
+        df_monthly_inbound.drop(['inb_m0'], axis=1, inplace=True)
+        df_total_sum_m0 = df_total_sum[df_total_sum['grass_date'] >= today_date - dt.timedelta(days=29)]
+        df_monthly_inbound_m0 = df_total_sum_m0.groupby(['supplier_name'])[['inbound_value_usd']].sum()
+        df_monthly_inbound = df_monthly_inbound.merge(df_monthly_inbound_m0, on=['supplier_name'], how='left')
+        df_monthly_inbound.columns = ['supplier_name', 'inb_m2', 'inb_m1', 'inb_m0']
+
     df_total_sum['grass_date'] = df_total_sum['grass_date'].dt.strftime('%Y-%m-%d')
     df_cogs = pd.pivot_table(df_total_sum, values='cogs_usd', index='supplier_name',
                              columns='grass_date').reset_index()
@@ -369,7 +391,7 @@ def main(country, today_date, main_df, supplier_dict):
 
     # todo: write new df_info5 into excel
 
-    path = country_folder_path + 'Monthly_wc_template.xlsx'
+    path = country_folder_path + 'Weekly_wc_template.xlsx'
     wb_obj = openpyxl.load_workbook(path)
     main_ws = wb_obj['Tracking']
     main_ws['B1'] = today_date
