@@ -296,12 +296,15 @@ def main(country, today_date, main_df, supplier_dict):
     eoms = get_eoms(today_date)
     df_eom_inv = main_df[['supplier_name', 'inventory_value_usd', 'grass_date', 'color']]
     df_eom_inv0 = df_eom_inv[(df_eom_inv['grass_date']).isin(eoms)]
+    df_eom_inv0['is_black_inv'] = np.where(df_eom_inv0['color'] == 'Black', 1, 0)
+    df_eom_inv0['black_inv_usd'] = df_eom_inv0['is_black_inv'] * df_eom_inv0['inventory_value_usd']
 
-    df_black_inv = df_eom_inv0[df_eom_inv0['color'] == 'Black']
-    df_black_inv0 = df_black_inv.groupby(['supplier_name', 'grass_date']) \
-        [['inventory_value_usd']].sum()\
-        .pivot_table(values='inventory_value_usd', index='supplier_name', columns='grass_date')\
+    df_black_inv0 = df_eom_inv0.groupby(['supplier_name', 'grass_date']) \
+        [['black_inv_usd']].sum() \
+        .pivot_table(values='black_inv_usd', index='supplier_name', columns='grass_date') \
         .reset_index()
+    if df_black_inv0.shape[1] == 3:
+        print('Warning: There is likely to be no data for the date you specified')
     df_black_inv0.columns = ['supplier_name', 'black_inv_m2', 'black_inv_m1', 'black_inv_m0']
     df_eom_inv1 = df_eom_inv0.groupby(['supplier_name', 'grass_date']) \
         [['inventory_value_usd']].sum()\
@@ -356,6 +359,7 @@ def main(country, today_date, main_df, supplier_dict):
     df_info5['black_inv_m2_perc'] = df_info5['black_inv_m2'] / df_info5['eom_inv_m2']
     df_info5['black_inv_m1_perc'] = df_info5['black_inv_m1'] / df_info5['eom_inv_m1']
     df_info5['black_inv_m0_perc'] = df_info5['black_inv_m0'] / df_info5['eom_inv_m0']
+    df_info5.fillna('N/A', inplace=True)
     df_info5 = df_info5[['category_cluster', 'supplier_name', 'no_skus_WH', 'inv_count',
                          'inventory_value_usd', 'brand_1', 'brand_2', 'brand_3', 'payment_terms',
                          'inb_repln_m2_perc', 'inb_repln_m1_perc', 'inb_repln_m0_perc',
