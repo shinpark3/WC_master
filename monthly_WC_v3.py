@@ -37,8 +37,8 @@ def get_sop(current_month):
     previous month which is denoted as the first day of the last month (SOP)
     :return SOP: start of period
     '''
-    two_months_back = current_month - dateutil.relativedelta.relativedelta(months=2)
-    m2_sop = two_months_back.replace(day=1)
+    m2_eom = get_eoms(current_month)[0]
+    m2_sop = m2_eom - dt.timedelta(days=89)
     return m2_sop
 
 
@@ -46,7 +46,7 @@ def get_eoms(today_date):
     m0_eom = today_date
     m1_eom = today_date.replace(day=1) - dateutil.relativedelta.relativedelta(days=1)
     m2_eom = m1_eom.replace(day=1) - dateutil.relativedelta.relativedelta(days=1)
-    return [m0_eom, m1_eom, m2_eom]
+    return [m2_eom, m1_eom, m0_eom]
 
 
 def get_days_in_months(today_date):
@@ -67,54 +67,17 @@ def get_days_in_months(today_date):
     return days_in_months
 
 
-def append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, wb_obj):
-    '''
-    This function paste the values in specified tables into the template,
-    and automatically computes the averages and sums of one month
-    :param write_dict: a dictionary of pivot tables
-    :param supplier_info_cols: the columns of supplier category and names
-    :param today_date: today date
-    :param days_in_months: number of days in each month
-    :param wb_obj: excel template to be written
-    :return:
-    '''
-    start_row = 3
+def append_to_excel(write_dict, today_date, wb_obj, start_row=3):
     start_date = get_sop(today_date)
-    for sheet_name, pivot_df in write_dict.items():
+    for sheet_name, df in write_dict.items():
         work_sheet = wb_obj[sheet_name]
-        work_sheet['F2'] = start_date
-        for df_index, row in pivot_df.iterrows():
+        work_sheet['G2'] = start_date
+        for df_index, row in df.iterrows():
             row_index = df_index + start_row
-            for df_col_name, excel_letter in supplier_info_cols.items():
-                cell_index = excel_letter + str(row_index)
-                work_sheet[cell_index] = row[df_col_name]
-            for column in range(6, pivot_df.shape[1] + 4):
-                day_index = column - 4
-                column_letter = get_column_letter(column)
+            for df_col in range(df.shape[1]):
+                column_letter = get_column_letter(df_col+1)
                 cell_index = column_letter + str(row_index)
-                work_sheet[cell_index] = row[day_index]
-            for column in range(3, 6):
-                column_letter = get_column_letter(column)
-                month_index = column - 2
-                cell_index = column_letter + str(row_index)
-                if month_index < len(days_in_months) - 1:
-                    start_col = 2 + sum(days_in_months[:month_index])
-                    end_col = 2 + sum(days_in_months[:month_index + 1])
-                    if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
-                        work_sheet[cell_index] = row[start_col:end_col].mean()
-                    else:
-                        work_sheet[cell_index] = row[start_col:end_col].sum()
-                else:
-                    end_col = len(row)
-                    start_col = end_col - days_in_months[month_index]
-                    if sheet_name in ['Daily Accounts Payable', 'Daily Inventory Value']:
-                        work_sheet[cell_index] = row[start_col:end_col].mean()
-                    else:
-                        work_sheet[cell_index] = row[start_col:end_col].sum()
-            for column in range(pivot_df.shape[1] + 4, work_sheet.max_column):
-                column_letter = get_column_letter(column)
-                cell_index = column_letter + str(row_index)
-                work_sheet[cell_index] = None
+                work_sheet[cell_index] = row[df_col]
 
 
 def read_suppliers(filename):
@@ -284,31 +247,29 @@ def main(country, today_date, main_df, supplier_dict):
     df_repln['is_green_repln'] = np.where((df_repln['color'] == 'Green')
                                           & (df_repln['is_replenishment'] == 1), 1, 0)
     df_repln['green_repln_usd'] = df_repln['inbound_value_usd'] * df_repln['is_green_repln']
-    df_repln1 = df_repln.groupby(['supplier_name',
-                                  pd.Grouper(key='grass_date', freq='M')]) \
-        [['inb_repln_usd', 'green_repln_usd']].sum()
-    df_repln2 = df_repln1.pivot_table(values='inb_repln_usd', index='supplier_name', columns='grass_date') \
-        .reset_index()
-    df_green_repln = df_repln1.pivot_table(values='green_repln_usd', index='supplier_name', columns='grass_date') \
-        .reset_index()
-    df_repln2.columns = ['supplier_name', 'inb_repln_m2', 'inb_repln_m1', 'inb_repln_m0']
-    df_green_repln.columns = ['supplier_name', 'green_repln_m2', 'green_repln_m1', 'green_repln_m0']
-
-    if today_date.day != calendar.monthrange(today_date.year, today_date.month)[1]:
-        df_repln1_m0 = df_repln[df_repln['grass_date'] >= today_date - dt.timedelta(days=29)]
-        # inbound replenishment
-        df_repln2.drop(['inb_repln_m0'], axis=1, inplace=True)
-        df_repln_m0 = df_repln1_m0.groupby(['supplier_name'])[['inb_repln_usd']].sum()
-        df_repln2 = df_repln2.merge(df_repln_m0, on=['supplier_name'], how='left')
-        df_repln2.columns = ['supplier_name', 'inb_repln_m2', 'inb_repln_m1', 'inb_repln_m0']
-        # green replenishment
-        df_green_repln.drop(['green_repln_m0'], axis=1, inplace=True)
-        df_green_repln_m0 = df_repln1_m0.groupby(['supplier_name'])[['green_repln_usd']].sum()
-        df_green_repln = df_green_repln.merge(df_green_repln_m0, on=['supplier_name'], how='left')
-        df_green_repln.columns = ['supplier_name', 'green_repln_m2', 'green_repln_m1', 'green_repln_m0']
-
 
     eoms = get_eoms(today_date)
+    df_repln1 = df_repln[['supplier_name']].drop_duplicates()
+    df_green_repln = df_repln[['supplier_name']].drop_duplicates()
+    # look back 90d for 3 end of period dates
+    for i in range(3):
+        start_date = eoms[i] - dt.timedelta(days=89)
+        df_total_temp = df_repln[(df_repln['grass_date'] >= start_date) & (df_repln['grass_date'] <= eoms[i])]
+        df_repln_mi = df_total_temp.groupby(['supplier_name'])[['inb_repln_usd']].sum()
+        df_repln1 = df_repln1.merge(df_repln_mi, on=['supplier_name'], how='left')
+        df_green_repln_mi = df_total_temp.groupby(['supplier_name'])[['green_repln_usd']].sum()
+        df_green_repln = df_green_repln.merge(df_green_repln_mi, on=['supplier_name'], how='left')
+    # inbound replenishment
+    df_repln1_m0 = df_repln[df_repln['grass_date'] >= today_date - dt.timedelta(days=29)]
+    df_repln_m0 = df_repln1_m0.groupby(['supplier_name'])[['inb_repln_usd']].sum()
+    df_repln1 = df_repln1.merge(df_repln_m0, on=['supplier_name'], how='left')
+    df_repln1.columns = ['supplier_name', 'inb_repln_m2', 'inb_repln_m1', 'inb_repln_m0', 'inb_repln_m0_30d']
+    # green inbound replenishment
+    df_green_repln_m0 = df_repln1_m0.groupby(['supplier_name'])[['green_repln_usd']].sum()
+    df_green_repln = df_green_repln.merge(df_green_repln_m0, on=['supplier_name'], how='left')
+    df_green_repln.columns = ['supplier_name', 'green_repln_m2', 'green_repln_m1',
+                              'green_repln_m0', 'green_repln_m0_30d']
+
     df_eom_inv = main_df[['supplier_name', 'inventory_value_usd', 'grass_date', 'color']]
     df_eom_inv0 = df_eom_inv[(df_eom_inv['grass_date']).isin(eoms)]
     df_eom_inv0['is_black_inv'] = np.where(df_eom_inv0['color'] == 'Black', 1, 0)
@@ -329,33 +290,51 @@ def main(country, today_date, main_df, supplier_dict):
     df_eom_inv2 = df_eom_inv1.merge(df_black_inv0, on=['supplier_name'], how='left')
 
     df_total_sum = main_df.groupby(['supplier_name', 'grass_date']).sum().reset_index()
-    df_monthly_inbound = df_total_sum.groupby(['supplier_name',
-                                               pd.Grouper(key='grass_date', freq='M')]) \
-        [['inbound_value_usd']].sum() \
-        .pivot_table(values='inbound_value_usd', index='supplier_name', columns='grass_date') \
-        .reset_index()
-    df_monthly_inbound.columns = ['supplier_name', 'inb_m2', 'inb_m1', 'inb_m0']
 
-    if today_date.day != calendar.monthrange(today_date.year, today_date.month)[1]:
-        df_monthly_inbound.drop(['inb_m0'], axis=1, inplace=True)
-        df_total_sum_m0 = df_total_sum[df_total_sum['grass_date'] >= today_date - dt.timedelta(days=29)]
-        df_monthly_inbound_m0 = df_total_sum_m0.groupby(['supplier_name'])[['inbound_value_usd']].sum()
-        df_monthly_inbound = df_monthly_inbound.merge(df_monthly_inbound_m0, on=['supplier_name'], how='left')
-        df_monthly_inbound.columns = ['supplier_name', 'inb_m2', 'inb_m1', 'inb_m0']
+    df_monthly_inb = df_total_sum[['supplier_name']].drop_duplicates()
+    df_monthly_cogs = df_total_sum[['supplier_name']].drop_duplicates()
+    df_monthly_inv = df_total_sum[['supplier_name']].drop_duplicates()
+    df_monthly_payable = df_total_sum[['supplier_name']].drop_duplicates()
+    for i in range(3):
+        start_date = eoms[i] - dt.timedelta(days=89)
+        df_total_temp = df_total_sum[(df_total_sum['grass_date'] >= start_date)
+                                     & (df_total_sum['grass_date'] <= eoms[i])]
+        df_monthly_inb_mi = df_total_temp.groupby(['supplier_name'])[['inbound_value_usd']].sum()
+        df_monthly_inb = df_monthly_inb.merge(df_monthly_inb_mi, on=['supplier_name'], how='left')
+        df_monthly_cogs_mi = df_total_temp.groupby(['supplier_name'])[['cogs_usd']].sum()
+        df_monthly_cogs = df_monthly_cogs.merge(df_monthly_cogs_mi, on=['supplier_name'], how='left')
+        df_monthly_inv_mi = df_total_temp.groupby(['supplier_name'])[['inventory_value_usd']].mean()
+        df_monthly_inv = df_monthly_inv.merge(df_monthly_inv_mi, on=['supplier_name'], how='left')
+        df_monthly_payable_mi = df_total_temp.groupby(['supplier_name'])[['acct_payables_usd']].mean()
+        df_monthly_payable = df_monthly_payable.merge(df_monthly_payable_mi, on=['supplier_name'], how='left')
 
+    df_total_sum_m0 = df_total_sum[df_total_sum['grass_date'] >= today_date - dt.timedelta(days=29)]
+    df_monthly_inb_m0 = df_total_sum_m0.groupby(['supplier_name'])[['inbound_value_usd']].sum()
+    df_monthly_inb = df_monthly_inb.merge(df_monthly_inb_m0, on=['supplier_name'], how='left')
+    df_monthly_inb.columns = ['supplier_name', 'inb_m2', 'inb_m1', 'inb_m0', 'inb_m0_30d']
+
+    df_monthly_cogs_m0 = df_total_sum_m0.groupby(['supplier_name'])[['cogs_usd']].sum()
+    df_monthly_cogs = df_monthly_cogs.merge(df_monthly_cogs_m0, on=['supplier_name'], how='left')
+    df_monthly_cogs.columns = ['supplier_name', 'cogs_m2', 'cogs_m1', 'cogs_m0', 'cogs_m0_30d']
+
+    df_monthly_inv_m0 = df_total_sum_m0.groupby(['supplier_name'])[['inventory_value_usd']].mean()
+    df_monthly_inv = df_monthly_inv.merge(df_monthly_inv_m0, on=['supplier_name'], how='left')
+    df_monthly_inv.columns = ['supplier_name', 'inv_m2', 'inv_m1', 'inv_m0', 'inv_m0_30d']
+
+    df_monthly_payable_m0 = df_total_sum_m0.groupby(['supplier_name'])[['acct_payables_usd']].mean()
+    df_monthly_payable = df_monthly_payable.merge(df_monthly_payable_m0, on=['supplier_name'], how='left')
+    df_monthly_payable.columns = ['supplier_name', 'payable_m2', 'payable_m1', 'payable_m0', 'payable_m0_30d']
+
+    # pivot tables
     df_total_sum['grass_date'] = df_total_sum['grass_date'].dt.strftime('%Y-%m-%d')
     df_cogs = pd.pivot_table(df_total_sum, values='cogs_usd', index='supplier_name',
                              columns='grass_date').reset_index()
-    df_cogs = df_inv_sorting2.merge(df_cogs, on=['supplier_name'], how='right')
     df_payable = pd.pivot_table(df_total_sum, values='acct_payables_usd',
                                 index='supplier_name', columns='grass_date').reset_index()
-    df_payable = df_inv_sorting2.merge(df_payable, on=['supplier_name'], how='right')
     df_inv_value = pd.pivot_table(df_total_sum, values='inventory_value_usd',
                                   index='supplier_name', columns='grass_date').reset_index()
-    df_inv_value = df_inv_sorting2.merge(df_inv_value, on=['supplier_name'], how='right')
     df_inbound = pd.pivot_table(df_total_sum, values='inbound_value_usd',
                                 index='supplier_name', columns='grass_date').reset_index()
-    df_inbound = df_inv_sorting2.merge(df_inbound, on=['supplier_name'], how='right')
 
     df_info3 = df_info3[['category_cluster', 'supplier_name', 'no_skus_WH',
                          'inv_count', 'inventory_value_usd', 'brand_1',
@@ -368,29 +347,31 @@ def main(country, today_date, main_df, supplier_dict):
         df_info4 = df_info3[df_info3['supplier_name'].isin(supplier_highlight)] \
             .reset_index(drop=True)
 
-    df_info5 = df_info4.merge(df_monthly_inbound, on=['supplier_name'], how='left')\
-        .merge(df_repln2, on=['supplier_name'], how='left')\
+    df_info5 = df_info4.merge(df_monthly_inb, on=['supplier_name'], how='left')\
+        .merge(df_repln1, on=['supplier_name'], how='left')\
         .merge(df_green_repln, on=['supplier_name'], how='left')\
         .merge(df_eom_inv2, on=['supplier_name'], how='left')
 
     df_info5['inb_repln_m2_perc'] = df_info5['inb_repln_m2']/ df_info5['inb_m2']
     df_info5['inb_repln_m1_perc'] = df_info5['inb_repln_m1'] / df_info5['inb_m1']
     df_info5['inb_repln_m0_perc'] = df_info5['inb_repln_m0'] / df_info5['inb_m0']
+    df_info5['inb_repln_m0_30d_perc'] = df_info5['inb_repln_m0_30d'] / df_info5['inb_m0_30d']
     df_info5['green_repln_m2_perc'] = df_info5['green_repln_m2'] / df_info5['inb_repln_m2']
     df_info5['green_repln_m1_perc'] = df_info5['green_repln_m1'] / df_info5['inb_repln_m1']
     df_info5['green_repln_m0_perc'] = df_info5['green_repln_m0'] / df_info5['inb_repln_m0']
+    df_info5['green_repln_m0_30d_perc'] = df_info5['green_repln_m0_30d'] / df_info5['inb_repln_m0_30d']
     df_info5['black_inv_m2_perc'] = df_info5['black_inv_m2'] / df_info5['eom_inv_m2']
     df_info5['black_inv_m1_perc'] = df_info5['black_inv_m1'] / df_info5['eom_inv_m1']
     df_info5['black_inv_m0_perc'] = df_info5['black_inv_m0'] / df_info5['eom_inv_m0']
     df_info5.fillna('N/A', inplace=True)
     df_info5 = df_info5[['category_cluster', 'supplier_name', 'no_skus_WH', 'inv_count',
                          'inventory_value_usd', 'brand_1', 'brand_2', 'brand_3', 'payment_terms',
-                         'inb_repln_m2_perc', 'inb_repln_m1_perc', 'inb_repln_m0_perc',
-                         'green_repln_m2_perc', 'green_repln_m1_perc', 'green_repln_m0_perc',
+                         'inb_repln_m2_perc', 'inb_repln_m1_perc', 'inb_repln_m0_perc', 'inb_repln_m0_30d_perc',
+                         'green_repln_m2_perc', 'green_repln_m1_perc', 'green_repln_m0_perc', 'green_repln_m0_30d_perc',
                          'black_inv_m2', 'black_inv_m1', 'black_inv_m0',
                          'black_inv_m2_perc', 'black_inv_m1_perc', 'black_inv_m0_perc']]
 
-    path = country_folder_path + 'Weekly_wc_template.xlsx'
+    path = country_folder_path + 'wc_template_v3.xlsx'
     wb_obj = openpyxl.load_workbook(path)
     main_ws = wb_obj['Tracking']
     main_ws['B1'] = today_date
@@ -398,23 +379,29 @@ def main(country, today_date, main_df, supplier_dict):
         for col_index in range(9):
             cell_index = get_column_letter(col_index + 1) + str(df_index + 4)
             main_ws[cell_index] = row[col_index]
-        for col_index in range(9,21):
-            cell_index = get_column_letter(col_index + 6 + 1) + str(df_index + 4)
+        for col_index in range(9, 23):
+            cell_index = get_column_letter(col_index + 8 + 1) + str(df_index + 4)
             main_ws[cell_index] = row[col_index]
 
+    df_payable1 = df_inv_sorting2.merge(df_monthly_payable, on=['supplier_name'], how='right')\
+        .merge(df_payable, on=['supplier_name'], how='inner')
+    df_cogs1 = df_inv_sorting2.merge(df_monthly_cogs, on=['supplier_name'], how='right')\
+        .merge(df_cogs, on=['supplier_name'], how='inner')
+    df_inv_value1 = df_inv_sorting2.merge(df_monthly_inv, on=['supplier_name'], how='right')\
+        .merge(df_inv_value, on=['supplier_name'], how='inner')
+    df_inbound1 = df_inv_sorting2.merge(df_monthly_inb, on=['supplier_name'], how='right')\
+        .merge(df_inbound, on=['supplier_name'], how='inner')
+
     write_dict = {
-        'Daily Accounts Payable': df_payable,
-        'Daily Inventory Value': df_inv_value,
-        'Daily COGS': df_cogs,
-        'Daily Inbounds': df_inbound
+        'Daily Accounts Payable': df_payable1,
+        'Daily Inventory Value': df_inv_value1,
+        'Daily COGS': df_cogs1,
+        'Daily Inbounds': df_inbound1
     }
-    supplier_info_cols = {
-        "category_cluster": "A",
-        "supplier_name": "B",
-    }
-    days_in_months = get_days_in_months(today_date)
-    append_to_excel(write_dict, supplier_info_cols, today_date, days_in_months, wb_obj)
-    wb_obj.save(country_folder_path + '/month_{}_sample_v2.xlsx'.format(country))
+
+    append_to_excel(write_dict, today_date, wb_obj, start_row=3)
+
+    wb_obj.save(country_folder_path + '/month_{}_sample_v3.xlsx'.format(country))
 
     df_info3.to_csv(country_folder_path + '{}_tracking_tab_v2.csv'.format(country),
                     encoding="utf-8-sig")
