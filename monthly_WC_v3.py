@@ -6,7 +6,6 @@ v3: summary date ranges are of 90d, 90d, 90d, 30d
 
 import os
 import argparse
-import calendar
 import subprocess
 import sys
 import datetime as dt
@@ -47,24 +46,6 @@ def get_eoms(today_date):
     m1_eom = today_date.replace(day=1) - dateutil.relativedelta.relativedelta(days=1)
     m2_eom = m1_eom.replace(day=1) - dateutil.relativedelta.relativedelta(days=1)
     return [m2_eom, m1_eom, m0_eom]
-
-
-def get_days_in_months(today_date):
-    '''
-    Returns the number of days in each month assuming there are only three months
-    The last number will always be 30 if today is not the end of the month
-    :return: days_in_month (a list of number of days in each month)
-    '''
-    start_date = get_sop(today_date)
-    days_in_months = [0,
-                      pd.Period(start_date.strftime("%Y-%m-%d")).days_in_month,
-                      pd.Period((start_date + pd.offsets.MonthBegin(1)).
-                                strftime("%Y-%m-%d")).days_in_month]
-    if today_date.day != calendar.monthrange(today_date.year, today_date.month)[1]:
-        days_in_months.append(30)
-    else:
-        days_in_months.append(today_date.day)
-    return days_in_months
 
 
 def append_to_excel(write_dict, today_date, wb_obj, start_row=3):
