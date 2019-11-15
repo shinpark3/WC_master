@@ -12,7 +12,7 @@ shopee_bi_sbs_mart
 ## Setup
 The script monthly_WC_v3.py runs on the server to pull the data and generate a report together. 
             
-![alt test] link to screenshot
+![tree] images/tree.jpg
 
 * Template: wc_template_<country>_v3.xlsx
 ![alt test] link to screenshot
