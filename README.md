@@ -11,8 +11,8 @@ shopee_bi_sbs_mart
 
 ## Setup
 The script monthly_WC_v3.py runs on the server to pull the data and generate a report together. 
-
-![alt test] link to tree structure image
+            
+![alt test] link to screenshot
 
 * Template: wc_template_<country>_v3.xlsx
 ![alt test] link to screenshot
@@ -78,6 +78,7 @@ def get_main_df(country, today_date, data_queried):
                               encoding='utf-8-sig', index_col=False)
     return main_df
 ```
+
 ### Process data
 * __Inbound replenishment__: Out of total inbound values, how much are of the skus that we already selling (sku created before the start of the current month)
 * __Green replenishment__: Out of inbound replenishment, how much skus are Green
