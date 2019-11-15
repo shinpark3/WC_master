@@ -161,9 +161,8 @@ def main(country, today_date, main_df, supplier_dict):
     main_df['cdate'] = pd.to_datetime(main_df['cdate'])
     df_info = main_df[main_df['grass_date'] == today_date]
 
-    df_inv_count = df_info.groupby('supplier_name')['stock_on_hand'].sum().reset_index()
-    df_inv_count.columns = ['supplier_name', 'inv_count']
-
+    # get each supplier's main category by the category cluster of its skus
+    # with the highest total inventory value on the latest day
     df_inv_sorting = main_df.sort_values(['grass_date'], ascending=False) \
         .groupby(['supplier_name'])['supplier_name', 'grass_date'] \
         .head(1).dropna(subset=['supplier_name'])
@@ -175,16 +174,20 @@ def main(country, today_date, main_df, supplier_dict):
         .groupby('supplier_name')['supplier_name', 'category_cluster'].head(1).reset_index()
     df_inv_sorting2 = df_inv_sorting2[['category_cluster', 'supplier_name']]
 
+    # Get the total inventory count (stock on hand) of each supplier
+    df_inv_count = df_info.groupby('supplier_name')['stock_on_hand'].sum().reset_index()
+    df_inv_count.columns = ['supplier_name', 'inv_count']
     df_inv_count = df_inv_sorting2.merge(df_inv_count, on=['supplier_name'], how='left')
     df_inv_sum = df_info.groupby('supplier_name')['inventory_value_usd'].sum().reset_index()
 
+    # get the total number of SKUs each supplier has
     df_sku_count = df_info.groupby('supplier_name')['sku_id'].count().reset_index()
     df_sku_count.columns = ['supplier_name', 'no_skus_WH']
     df_info0 = df_sku_count.merge(df_inv_count, on=['supplier_name'], how='left')
 
     df_payment = df_info.groupby('supplier_name')['supplier_name', 'payment_terms']. \
         head(1).reset_index(drop=True)
-    df_last_month = main_df[(main_df['grass_date'] >= today_date - dt.timedelta(days=30))
+    df_last_month = main_df[(main_df['grass_date'] >= today_date - dt.timedelta(days=29))
                             & (main_df['grass_date'] <= today_date)]
     df_last_month.drop_duplicates(inplace=True)
     brands_df = df_last_month[['supplier_name', 'brand']]
