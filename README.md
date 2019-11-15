@@ -9,9 +9,24 @@
 ## Data source 
 shopee_bi_sbs_mart
 
-## Set-ups 
-### Environment
-The script monthly_WC_v3.py runs on the server for both pulling data and report generating. 
+## Setup
+The script monthly_WC_v3.py runs on the server to pull the data and generate a report. 
 
-### Working directory
+![alt test] link to tree structure image
+
+## Running
+To generate a WC report, the only thing you need to do is typing the following command in the server:
+```
+$spark-submit monthly_WC_v3.py -c [countries] -d [date] -q [queried]
+```
+Examples:
+```
+$spark-submit monthly_WC_v3.py -c ID VN TH PH MY -d 20191114 
+$spark-submit monthly_WC_v3.py -c ID -d 20191114 -q True
+```
+
+## Utils
+
+
+## Tests
 
