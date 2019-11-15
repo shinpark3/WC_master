@@ -79,8 +79,8 @@ def get_main_df(country, today_date, data_queried):
     return main_df
 ```
 ### Process data
-* Inbound replenishment: Out of total inbound values, how much are of the skus that we already selling (sku created before the start of the current month)
-* Green replenishment: Out of inbound replenishment, how much skus are Green
+* __Inbound replenishment__: Out of total inbound values, how much are of the skus that we already selling (sku created before the start of the current month)
+* __Green replenishment__: Out of inbound replenishment, how much skus are Green
 ```python
 df_repln = main_df[['supplier_name', 'inbound_value_usd', 'cdate', 'grass_date', 'color']]
 df_repln['is_replenishment'] = np.where(df_repln['cdate']
@@ -91,7 +91,7 @@ df_repln['is_green_repln'] = np.where((df_repln['color'] == 'Green')
 df_repln['green_repln_usd'] = df_repln['inbound_value_usd'] * df_repln['is_green_repln']
 ```
 
-* look back 90 days for three end_of_period (eop) dates 
+* look back __90 days__ for three end_of_period (eop) dates 
 ```python
 df_repln1 = df_repln[['supplier_name']].drop_duplicates()
 df_green_repln = df_repln[['supplier_name']].drop_duplicates()
@@ -104,7 +104,7 @@ for i in range(3):
     df_green_repln = df_green_repln.merge(df_green_repln_mi, on=['supplier_name'], how='left')
 ```
 
-* last 30d inbound replenishment, similarly for last 30d green inbound replenishment
+* __Last 30d inbound replenishment__, similarly for last 30d green inbound replenishment
 ```python
 df_repln1_m0 = df_repln[df_repln['grass_date'] >= today_date - dt.timedelta(days=29)]
 df_repln_m0 = df_repln1_m0.groupby(['supplier_name'])[['inb_repln_usd']].sum()
@@ -112,7 +112,7 @@ df_repln1 = df_repln1.merge(df_repln_m0, on=['supplier_name'], how='left')
 df_repln1.columns = ['supplier_name', 'inb_repln_m2', 'inb_repln_m1', 'inb_repln_m0', 'inb_repln_m0_30d']
 ```
 
-* End of month black stock value: how much of the total inventory values are black at the end of month
+* __End of month black stock value__: how much of the total inventory values are black at the end of month
 ```python
 df_eop_inv = main_df[['supplier_name', 'inventory_value_usd', 'grass_date', 'color']]
 df_eop_inv0 = df_eop_inv[(df_eop_inv['grass_date']).isin(eops)]
@@ -132,13 +132,13 @@ df_eop_inv1 = df_eop_inv0.groupby(['supplier_name', 'grass_date']) \
 df_eop_inv1.columns = ['supplier_name', 'eop_inv_m2', 'eop_inv_m1', 'eop_inv_m0']
 ```
 
-* Pivot tables for Daily COGS. Similarly for Daily inbound, Average daily accounts payable and Average daily inventory value
+* __Pivot tables for Daily COGS__. Similarly for Daily inbound, Average daily accounts payable and Average daily inventory value
 ```python
 df_total_sum = main_df.groupby(['supplier_name', 'grass_date']).sum().reset_index()
 df_cogs = pd.pivot_table(df_total_sum, values='cogs_usd', index='supplier_name', columns='grass_date').reset_index()
 ```
 
-* Append data frame to template: row by row, cell by cell appending
+* __Append data frame to template__: row by row, cell by cell appending
 ```python
 path = country_folder_path + 'template/wc_template_' + country + '_v3.xlsx'
 wb_obj = openpyxl.load_workbook(path)
