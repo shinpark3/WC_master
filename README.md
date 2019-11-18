@@ -10,7 +10,7 @@
 shopee_bi_sbs_mart
 
 ## Setup
-The script monthly_WC_v3.py runs on the server to pull the data and generate a report together. 
+The script __monthly_WC_v3.py__ runs on the server to pull the data and generate a report together. 
             
 ![tree](https://github.com/shinpark3/WC_master/blob/master/images/tree.jpg)
 
