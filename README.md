@@ -14,7 +14,7 @@ The script monthly_WC_v3.py runs on the server to pull the data and generate a r
             
 ![tree](https://github.com/shinpark3/WC_master/blob/master/images/tree.jpg)
 
-* Template: wc_template_<country>_v3.xlsx
+* Template: wc_template_\<country\>_v3.xlsx
 * Timeline: (Example: today is 18 Nov 2019)
 ![timeline](https://github.com/shinpark3/WC_master/blob/master/images/timeline.png)
 
@@ -154,7 +154,7 @@ for df_index, row in df_info5.iterrows():
 ```
 
 ## Tests
-Run 'Unittests for monthly_WC_test.tTestPivotTables' in PyCharm
+Run 'Unittests for monthly_WC_test.TestPivotTables' in PyCharm
 
 ## PySpark
 Use pyspark dataframe to manipulate the data instead of pandas dataframe.
