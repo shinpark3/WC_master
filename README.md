@@ -16,8 +16,8 @@ The script monthly_WC_v3.py runs on the server to pull the data and generate a r
 
 * Template: wc_template_<country>_v3.xlsx
 ![alt test] link to screenshot
-* Supplier list: suppliers.yaml
-![alt test] link to screenshot
+* Timeline: 
+![timeline] (https://github.com/shinpark3/WC_master/blob/master/images/timeline.png)
 
 ## Running
 To generate a WC report, the only thing you need to do is typing the following command:
