@@ -3,21 +3,20 @@
 
 ## Background
 * Working capital days = Inventory days - Payable days
-* Inventory days = Average daily Inventory / COGS * 30
-* Payable days = Average daily Payables / COGS * 30
+* Inventory days = Average daily Inventory / COGS * days
+* Payable days = Average daily Payables / COGS * days
 
 ## Data source 
 shopee_bi_sbs_mart
 
 ## Setup
-The script monthly_WC_v3.py runs on the server to pull the data and generate a report together. 
+The script __monthly_WC_v3.py__ runs on the server to pull the data and generate a report together. 
+            
+![tree](https://github.com/shinpark3/WC_master/blob/master/images/tree.jpg)
 
-![alt test] link to tree structure image
-
-* Template: wc_template_<country>_v3.xlsx
-![alt test] link to screenshot
-* Supplier list: suppliers.yaml
-![alt test] link to screenshot
+* Template: wc_template_\<country\>_v3.xlsx
+* Timeline: (Example: today is 18 Nov 2019)
+![timeline](https://github.com/shinpark3/WC_master/blob/master/images/timeline.png)
 
 ## Running
 To generate a WC report, the only thing you need to do is typing the following command:
@@ -78,6 +77,7 @@ def get_main_df(country, today_date, data_queried):
                               encoding='utf-8-sig', index_col=False)
     return main_df
 ```
+
 ### Process data
 * __Inbound replenishment__: Out of total inbound values, how much are of the skus that we already selling (sku created before the start of the current month)
 * __Green replenishment__: Out of inbound replenishment, how much skus are Green
@@ -154,4 +154,11 @@ for df_index, row in df_info5.iterrows():
 ```
 
 ## Tests
+Run 'Unittests for monthly_WC_test.TestPivotTables' in PyCharm
 
+## PySpark
+Use pyspark dataframe to manipulate the data instead of pandas dataframe.
+Note: The script has not been updated for template v3
+```
+$spark-submit monthly_WC_pyspark.py -c [countries] -d [date] -q [queried]
+```
