@@ -388,15 +388,15 @@ def main(country, today_date, main_df, supplier_dict):
     today = dt.datetime.strftime(today_date, "%Y-%m-%d")
     wb_obj.save(country_folder_path + '/Weekly Working Capital {} - {}.xlsx'.format(country, today))
 
-    df_info3.to_csv(country_folder_path + '{}_tracking_tab_v2.csv'.format(country),
+    df_info3.to_csv(country_folder_path + '{}_tracking_tab.csv'.format(country),
                     encoding="utf-8-sig", index=False)
-    df_payable.to_csv(country_folder_path + '{}_payables_v2.csv'.format(country),
+    df_payable.to_csv(country_folder_path + '{}_payables.csv'.format(country),
                       encoding="utf-8-sig", index=False)
-    df_cogs.to_csv(country_folder_path + '{}_cogs_v2.csv'.format(country),
+    df_cogs.to_csv(country_folder_path + '{}_cogs.csv'.format(country),
                    encoding="utf-8-sig", index=False)
-    df_inv_value.to_csv(country_folder_path + '{}_inventory_value_v2.csv'.format(country),
+    df_inv_value.to_csv(country_folder_path + '{}_inventory_value.csv'.format(country),
                         encoding="utf-8-sig", index=False)
-    df_inbound.to_csv(country_folder_path + '{}_inbound_v2.csv'.format(country),
+    df_inbound.to_csv(country_folder_path + '{}_inbound.csv'.format(country),
                       encoding="utf-8-sig", index=False)
     result_dict = {'tracking': df_info3, 'payable': df_payable, 'cogs': df_cogs,
                    'inventory': df_inv_value, 'inbound': df_inbound, 'tracking_yaml': df_info4}
