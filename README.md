@@ -3,8 +3,8 @@
 
 ## Background
 * Working capital days = Inventory days - Payable days
-* Inventory days = Average daily Inventory / COGS * 30
-* Payable days = Average daily Payables / COGS * 30
+* Inventory days = Average daily Inventory / COGS * days
+* Payable days = Average daily Payables / COGS * days
 
 ## Data source 
 shopee_bi_sbs_mart
