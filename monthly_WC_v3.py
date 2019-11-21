@@ -286,7 +286,7 @@ def main(country, today_date, main_df, supplier_dict):
                                      & (df_total_sum['grass_date'] <= eops[i])]
         df_monthly_inb_mi = df_total_temp.groupby(['supplier_name'])[['inbound_value_usd']].sum()
         df_monthly_inb = df_monthly_inb.merge(df_monthly_inb_mi, on=['supplier_name'], how='left')
-        df_monthly_cogs_mi = df_total_temp.groupby(['supplier_name'])[['cogs_usd']].sum()
+        df_monthly_cogs_mi = df_total_temp.groupby(['supplier_name'])[['cogs_usd']].sum()/30
         df_monthly_cogs = df_monthly_cogs.merge(df_monthly_cogs_mi, on=['supplier_name'], how='left')
         df_monthly_inv_mi = df_total_temp.groupby(['supplier_name'])[['inventory_value_usd']].mean()
         df_monthly_inv = df_monthly_inv.merge(df_monthly_inv_mi, on=['supplier_name'], how='left')
