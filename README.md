@@ -80,36 +80,47 @@ def get_main_df(country, today_date, data_queried):
 
 ### Process data
 * __Inbound replenishment__: Out of total inbound values, how much are of the skus that we already selling (sku created before the start of the current month)
-* __Green replenishment__: Out of inbound replenishment, how much skus are Green
+* __Green replenishment__: Out of inbound replenishment, how much skus are Green  
+If the end of period (eop) date is not the last day of a month, look back 30 days. Otherwise look back for the whole month.  
 ```python
 df_repln = main_df[['supplier_name', 'inbound_value_usd', 'cdate', 'grass_date', 'color']]
-df_repln['is_replenishment'] = np.where(df_repln['cdate']
-                                        < df_repln['grass_date'].astype('datetime64[M]'), 1, 0)
-df_repln['inb_repln_usd'] = df_repln['inbound_value_usd'] * df_repln['is_replenishment']
-df_repln['is_green_repln'] = np.where((df_repln['color'] == 'Green')
-                                      & (df_repln['is_replenishment'] == 1), 1, 0)
-df_repln['green_repln_usd'] = df_repln['inbound_value_usd'] * df_repln['is_green_repln']
-```
-
-* look back __90 days__ for three end_of_period (eop) dates 
-```python
 df_repln1 = df_repln[['supplier_name']].drop_duplicates()
 df_green_repln = df_repln[['supplier_name']].drop_duplicates()
+eops = get_eops(today_date)
 for i in range(3):
-    start_date = eops[i] - dt.timedelta(days=89)
+    if eops[i] == calendar.monthrange(eops[i].year, eops[i].month)[1]:
+        start_date = eops[i].replace(day=1)
+    else:
+        start_date = eops[i] - dt.timedelta(days=29)
     df_total_temp = df_repln[(df_repln['grass_date'] >= start_date) & (df_repln['grass_date'] <= eops[i])]
+    df_total_temp['is_replenishment'] = np.where(df_total_temp['cdate'] < start_date, 1, 0)
+    df_total_temp['inb_repln_usd'] = df_total_temp['inbound_value_usd'] * df_total_temp['is_replenishment']
+    df_total_temp['is_green_repln'] = np.where((df_total_temp['color'] == 'Green')
+                                               & (df_total_temp['is_replenishment'] == 1), 1, 0)
+    df_total_temp['green_repln_usd'] = df_total_temp['inbound_value_usd'] * df_total_temp['is_green_repln']
     df_repln_mi = df_total_temp.groupby(['supplier_name'])[['inb_repln_usd']].sum()
     df_repln1 = df_repln1.merge(df_repln_mi, on=['supplier_name'], how='left')
     df_green_repln_mi = df_total_temp.groupby(['supplier_name'])[['green_repln_usd']].sum()
     df_green_repln = df_green_repln.merge(df_green_repln_mi, on=['supplier_name'], how='left')
+
+df_repln1.columns = ['supplier_name', 'inb_repln_m2', 'inb_repln_m1', 'inb_repln_m0_30d']
+df_green_repln.columns = ['supplier_name', 'green_repln_m2', 'green_repln_m1', 'green_repln_m0_30d']
 ```
 
-* __Last 30d inbound replenishment__, similarly for last 30d green inbound replenishment
+* For COGS, inventory value, accounts payable: look back __90 days__ for each end of period (eop) and the __last 30d__ as well  
 ```python
-df_repln1_m0 = df_repln[df_repln['grass_date'] >= today_date - dt.timedelta(days=29)]
-df_repln_m0 = df_repln1_m0.groupby(['supplier_name'])[['inb_repln_usd']].sum()
-df_repln1 = df_repln1.merge(df_repln_m0, on=['supplier_name'], how='left')
-df_repln1.columns = ['supplier_name', 'inb_repln_m2', 'inb_repln_m1', 'inb_repln_m0', 'inb_repln_m0_30d']
+df_monthly_cogs = df_total_sum[['supplier_name']].drop_duplicates()
+for i in range(3):
+    start_date = eops[i] - dt.timedelta(days=89)
+    df_total_temp = df_total_sum[(df_total_sum['grass_date'] >= start_date)
+                                 & (df_total_sum['grass_date'] <= eops[i])]
+    df_monthly_cogs_mi = df_total_temp.groupby(['supplier_name'])[['cogs_usd']].sum()
+    df_monthly_cogs = df_monthly_cogs.merge(df_monthly_cogs_mi, on=['supplier_name'], how='left')
+    
+df_total_sum_m0 = df_total_sum[df_total_sum['grass_date'] >= today_date - dt.timedelta(days=29)]
+df_monthly_cogs_m0 = df_total_sum_m0.groupby(['supplier_name'])[['cogs_usd']].sum()
+df_monthly_cogs = df_monthly_cogs.merge(df_monthly_cogs_m0, on=['supplier_name'], how='left')
+df_monthly_cogs.columns = ['supplier_name', 'cogs_m2', 'cogs_m1', 'cogs_m0', 'cogs_m0_30d']
 ```
 
 * __End of month black stock value__: how much of the total inventory values are black at the end of month
