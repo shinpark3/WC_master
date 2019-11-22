@@ -270,7 +270,7 @@ def main(country, today_date, main_df, supplier_dict):
 
     df_total_sum = main_df.groupby(['supplier_name', 'grass_date']).sum().reset_index()
 
-    # df_monthly_inb = df_total_sum[['supplier_name']].drop_duplicates()
+    df_monthly_inb = df_total_sum[['supplier_name']].drop_duplicates()
     df_monthly_cogs = df_total_sum[['supplier_name']].drop_duplicates()
     df_monthly_inv = df_total_sum[['supplier_name']].drop_duplicates()
     df_monthly_payable = df_total_sum[['supplier_name']].drop_duplicates()
@@ -278,19 +278,23 @@ def main(country, today_date, main_df, supplier_dict):
         start_date = eops[i] - dt.timedelta(days=89)
         df_total_temp = df_total_sum[(df_total_sum['grass_date'] >= start_date)
                                      & (df_total_sum['grass_date'] <= eops[i])]
-        # df_monthly_inb_mi = df_total_temp.groupby(['supplier_name'])[['inbound_value_usd']].sum()
-        # df_monthly_inb = df_monthly_inb.merge(df_monthly_inb_mi, on=['supplier_name'], how='left')
         df_monthly_cogs_mi = df_total_temp.groupby(['supplier_name'])[['cogs_usd']].sum() / 30
         df_monthly_cogs = df_monthly_cogs.merge(df_monthly_cogs_mi, on=['supplier_name'], how='left')
         df_monthly_inv_mi = df_total_temp.groupby(['supplier_name'])[['inventory_value_usd']].mean()
         df_monthly_inv = df_monthly_inv.merge(df_monthly_inv_mi, on=['supplier_name'], how='left')
         df_monthly_payable_mi = df_total_temp.groupby(['supplier_name'])[['acct_payables_usd']].mean()
         df_monthly_payable = df_monthly_payable.merge(df_monthly_payable_mi, on=['supplier_name'], how='left')
+        if eops[i] == calendar.monthrange(eops[i].year, eops[i].month)[1]:
+            start_date1 = eops[i].replace(day=1)
+        else:
+            start_date1 = eops[i] - dt.timedelta(days=29)
+        df_total_temp1 = df_total_sum[(df_total_sum['grass_date'] >= start_date1)
+                                      & (df_total_sum['grass_date'] <= eops[i])]
+        df_monthly_inb_mi = df_total_temp1.groupby(['supplier_name'])[['inbound_value_usd']].sum()
+        df_monthly_inb = df_monthly_inb.merge(df_monthly_inb_mi, on=['supplier_name'], how='left')
 
     df_total_sum_m0 = df_total_sum[df_total_sum['grass_date'] >= today_date - dt.timedelta(days=29)]
-    # df_monthly_inb_m0 = df_total_sum_m0.groupby(['supplier_name'])[['inbound_value_usd']].sum()
-    # df_monthly_inb = df_monthly_inb.merge(df_monthly_inb_m0, on=['supplier_name'], how='left')
-    # df_monthly_inb.columns = ['supplier_name', 'inb_m2', 'inb_m1', 'inb_m0', 'inb_m0_30d']
+    df_monthly_inb.columns = ['supplier_name', 'inb_m2', 'inb_m1', 'inb_m0_30d']
 
     df_monthly_cogs_m0 = df_total_sum_m0.groupby(['supplier_name'])[['cogs_usd']].sum()
     df_monthly_cogs = df_monthly_cogs.merge(df_monthly_cogs_m0, on=['supplier_name'], how='left')
@@ -312,8 +316,8 @@ def main(country, today_date, main_df, supplier_dict):
                                 index='supplier_name', columns='grass_date').reset_index()
     df_inv_value = pd.pivot_table(df_total_sum, values='inventory_value_usd',
                                   index='supplier_name', columns='grass_date').reset_index()
-    # df_inbound = pd.pivot_table(df_total_sum, values='inbound_value_usd',
-    #                             index='supplier_name', columns='grass_date').reset_index()
+    df_inbound = pd.pivot_table(df_total_sum, values='inbound_value_usd',
+                                 index='supplier_name', columns='grass_date').reset_index()
 
     df_info3 = df_info3[['category_cluster', 'supplier_name', 'no_skus_WH',
                          'inv_count', 'inventory_value_usd', 'brand_1',
@@ -343,8 +347,8 @@ def main(country, today_date, main_df, supplier_dict):
     df_info5.fillna('N/A', inplace=True)
     df_info5 = df_info5[['category_cluster', 'supplier_name', 'no_skus_WH', 'inv_count',
                          'inventory_value_usd', 'brand_1', 'brand_2', 'brand_3', 'payment_terms',
-                         'inb_repln_m2_perc', 'inb_repln_m1_perc', 'inb_repln_m0_perc', 'inb_repln_m0_30d_perc',
-                         'green_repln_m2_perc', 'green_repln_m1_perc', 'green_repln_m0_perc', 'green_repln_m0_30d_perc',
+                         'inb_repln_m2_perc', 'inb_repln_m1_perc', 'inb_repln_m0_30d_perc',
+                         'green_repln_m2_perc', 'green_repln_m1_perc', 'green_repln_m0_30d_perc',
                          'black_inv_m2', 'black_inv_m1', 'black_inv_m0',
                          'black_inv_m2_perc', 'black_inv_m1_perc', 'black_inv_m0_perc']]
 
@@ -356,8 +360,8 @@ def main(country, today_date, main_df, supplier_dict):
         for col_index in range(9):
             cell_index = get_column_letter(col_index + 1) + str(df_index + 4)
             main_ws[cell_index] = row[col_index]
-        for col_index in range(9, 23):
-            cell_index = get_column_letter(col_index + 8 + 1) + str(df_index + 4)
+        for col_index in range(9, 21):
+            cell_index = get_column_letter(col_index + 7 + 1) + str(df_index + 4)
             main_ws[cell_index] = row[col_index]
 
     df_payable1 = df_inv_sorting2.merge(df_monthly_payable, on=['supplier_name'], how='right') \
