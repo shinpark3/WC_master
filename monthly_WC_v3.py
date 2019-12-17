@@ -49,11 +49,11 @@ def get_eops(today_date):
     return [m2_eop, m1_eop, m0_eop]
 
 
-def append_to_excel(write_dict, today_date, wb_obj, start_row=3):
+def append_to_excel(write_dict, today_date, wb_obj, start_row=3,date_cell = 'G2'):
     start_date = get_sop(today_date)
     for sheet_name, df in write_dict.items():
         work_sheet = wb_obj[sheet_name]
-        work_sheet['G2'] = start_date
+        work_sheet[date_cell] = start_date
         for df_index, row in df.iterrows():
             row_index = df_index + start_row
             for df_col in range(df.shape[1]):
@@ -65,7 +65,7 @@ def append_to_excel(write_dict, today_date, wb_obj, start_row=3):
 def read_suppliers(filename):
     '''
     Read supplier list from yaml filename
-    :return: dictionary of country, suppliers pair
+    :return: dictionary of country, suppliers pair0
     '''
     with open(filename, 'r') as stream:
         dictionary = yaml.load(stream, Loader=yaml.FullLoader)
@@ -376,11 +376,11 @@ def main(country, today_date, main_df, supplier_dict):
     write_dict = {
         'Daily Accounts Payable': df_payable1,
         'Daily Inventory Value': df_inv_value1,
-        'Daily COGS': df_cogs1,
-        'Daily Inbounds': df_inbound1
+        'Daily COGS': df_cogs1
     }
 
     append_to_excel(write_dict, today_date, wb_obj, start_row=3)
+    append_to_excel({'Daily Inbounds': df_inbound1}, today_date, wb_obj, start_row=3,date_cell='F2')       
     today = dt.datetime.strftime(today_date, "%Y-%m-%d")
     wb_obj.save(country_folder_path + '/Weekly Working Capital {} - {}.xlsx'.format(country, today))
 
@@ -403,7 +403,7 @@ def main(country, today_date, main_df, supplier_dict):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--countries', nargs='+', default=['ID', 'MY', 'TH', 'VN', 'TW', 'PH'])
+    parser.add_argument('-c', '--countries', nargs='+', default=['ID', 'MY', 'TH', 'VN', 'TW', 'PH','SG'])
     parser.add_argument("-d", "--date",
                         default=dt.date.today() - dt.timedelta(days=1),
                         type=lambda d: dt.datetime.strptime(d, '%Y%m%d').date(),
