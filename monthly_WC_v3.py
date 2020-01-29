@@ -93,7 +93,7 @@ def get_main_df(country, today_date, data_queried):
             SELECT category_cluster, supplier_name, sku_id, cdate, color,
                     cogs_usd, stock_on_hand, inbound_value_usd, acct_payables_usd, 
                     inventory_value_usd, payment_terms, brand, grass_date 
-            FROM shopee_bi_sbs_mart
+            FROM shopee_bi_sbs_mart_tmp
             WHERE
                 supplier_name is NOT NULL
             AND
@@ -308,6 +308,12 @@ def main(country, today_date, main_df, supplier_dict):
     df_monthly_payable = df_monthly_payable.merge(df_monthly_payable_m0, on=['supplier_name'], how='left')
     df_monthly_payable.columns = ['supplier_name', 'payable_m2', 'payable_m1', 'payable_m0', 'payable_m0_30d']
 
+    # caculate last month last 30 days inventory
+    lasteom = dt.datetime(today_date.year,today_date.month,1)-dt.timedelta(days = 1)
+    l30invdays = df_total_sum.loc[(df_total_sum['grass_date']<=lasteom)&(df_total_sum['grass_date']>=(lasteom-dt.timedelta(days = 29))), \
+    					['supplier_name','inventory_value_usd','cogs_usd']]
+    l30invdays = l30invdays.groupby('supplier_name').sum().reset_index()
+    l30invdays['l30_inv_days'] = l30invdays['inventory_value_usd']/l30invdays['cogs_usd'].replace(0,np.nan)
     # pivot tables
     df_total_sum['grass_date'] = df_total_sum['grass_date'].dt.strftime('%Y-%m-%d')
     df_cogs = pd.pivot_table(df_total_sum, values='cogs_usd', index='supplier_name',
@@ -344,13 +350,15 @@ def main(country, today_date, main_df, supplier_dict):
     df_info5['black_inv_m2_perc'] = df_info5['black_inv_m2'] / df_info5['eop_inv_m2']
     df_info5['black_inv_m1_perc'] = df_info5['black_inv_m1'] / df_info5['eop_inv_m1']
     df_info5['black_inv_m0_perc'] = df_info5['black_inv_m0'] / df_info5['eop_inv_m0']
+    df_info5 = df_info5.merge(l30invdays[['supplier_name','l30_inv_days']],on = 'supplier_name',how = 'left')
     df_info5.fillna('N/A', inplace=True)
     df_info5 = df_info5[['category_cluster', 'supplier_name', 'no_skus_WH', 'inv_count',
                          'inventory_value_usd', 'brand_1', 'brand_2', 'brand_3', 'payment_terms',
                          'inb_repln_m2_perc', 'inb_repln_m1_perc', 'inb_repln_m0_30d_perc',
                          'green_repln_m2_perc', 'green_repln_m1_perc', 'green_repln_m0_30d_perc',
                          'black_inv_m2', 'black_inv_m1', 'black_inv_m0',
-                         'black_inv_m2_perc', 'black_inv_m1_perc', 'black_inv_m0_perc']]
+                         'black_inv_m2_perc', 'black_inv_m1_perc', 'black_inv_m0_perc','l30_inv_days']]
+
 
     path = country_folder_path + 'template/wc_template_' + country + '_v3.xlsx'
     wb_obj = openpyxl.load_workbook(path)
@@ -363,7 +371,9 @@ def main(country, today_date, main_df, supplier_dict):
         for col_index in range(9, 21):
             cell_index = get_column_letter(col_index + 7 + 1) + str(df_index + 4)
             main_ws[cell_index] = row[col_index]
-
+        for col_index in range(21,22):
+        	cell_index = get_column_letter(col_index + 18 +1) + str(df_index + 4)
+        	main_ws[cell_index] = row[col_index]
     df_payable1 = df_inv_sorting2.merge(df_monthly_payable, on=['supplier_name'], how='right') \
         .merge(df_payable, on=['supplier_name'], how='inner')
     df_cogs1 = df_inv_sorting2.merge(df_monthly_cogs, on=['supplier_name'], how='right') \
